@@ -26,6 +26,7 @@
  *   - .figure and .caption (HTML4) and figure and figcaption (HTML5)
  *     -> .sidefigure for right-floated figures
  *   - ins/del
+ *     -> ins/del.c### for candidate and proposed changes (amendments)
  *
  * Code
  *   - pre and code
@@ -34,9 +35,12 @@
  *   - .note       for informative notes             (div, p, span, aside, details)
  *   - .example    for informative examples          (div, p, pre, span)
  *   - .issue      for issues                        (div, p, span)
- *   - .assertion  for assertions                    (div, p, span)
  *   - .advisement for loud normative statements     (div, p, strong)
  *   - .annoying-warning for spec obsoletion notices (div, aside, details)
+ *   - .correction for "candidate corrections"       (div, aside, details, section)
+ *   - .addition   for "candidate additions"         (div, aside, details, section)
+ *   - .correction.proposed for "proposed corrections" (div, aside, details, section)
+ *   - .addition.proposed   for "proposed additions"   (div, aside, details, section)
  *
  * Definition Boxes
  *   - pre.def   for WebIDL definitions
@@ -57,6 +61,8 @@
  *   - .head for the header
  *   - .copyright for the copyright
  *
+ * Outdated warning for old specs
+ *
  * Miscellaneous
  *   - .overlarge for things that should be as wide as possible, even if
  *     that overflows the body text area. This can be used on an item or
@@ -64,22 +70,28 @@
  *     Note that this styling basically doesn't help at all when printing,
  *     since A4 paper isn't much wider than the max-width here.
  *     It's better to design things to fit into a narrower measure if possible.
+ *
  *   - js-added ToC jump links (see fixup.js)
  *
  ******************************************************************************/
 
+/* color variables included separately for reliability */
+
 /******************************************************************************/
-/*                                   Body                                     */
+/*                                    Body                                    */
 /******************************************************************************/
+
+	html {
+	}
 
 	body {
 		counter-reset: example figure issue;
 
 		/* Layout */
-		max-width: 50em;               /* limit line length to 50em for readability   */
-		margin: 0 auto;                /* center text within page                     */
+		max-width: 50em;			  /* limit line length to 50em for readability   */
+		margin: 0 auto;				/* center text within page                    */
 		padding: 1.6em 1.5em 2em 50px; /* assume 16px font size for downlevel clients */
-		padding: 1.6em 1.5em 2em calc(26px + 1.5em); /* leave space for status flag     */
+		padding: 1.6em 1.5em 2em calc(26px + 1.5em); /* leave space for status flag    */
 
 		/* Typography */
 		line-height: 1.5;
@@ -90,9 +102,10 @@
 		overflow-wrap: break-word;
 		hyphens: auto;
 
-		/* Colors */
 		color: black;
+		color: var(--text);
 		background: white top left fixed no-repeat;
+		background: var(--bg) top left fixed no-repeat;
 		background-size: 25px auto;
 	}
 
@@ -103,7 +116,7 @@
 
 /** Header ********************************************************************/
 
-	div.head { margin-bottom: 1em }
+	div.head { margin-bottom: 1em; }
 	div.head hr { border-style: solid; }
 
 	div.head h1 {
@@ -124,10 +137,13 @@
 	.head img[src*="logos/W3C"] {
 		display: block;
 		border: solid #1a5e9a;
+		border: solid var(--logo-bg);
 		border-width: .65rem .7rem .6rem;
 		border-radius: .4rem;
 		background: #1a5e9a;
+		background: var(--logo-bg);
 		color: white;
+		color: var(--logo-text);
 		font-weight: bold;
 	}
 
@@ -138,7 +154,9 @@
 
 	.head a:active > img[src*="logos/W3C"] {
 		background: #c00;
+		background: var(--logo-active-bg);
 		border-color: #c00;
+		border-color: var(--logo-active-bg);
 	}
 
 	/* see also additional rules in Link Styling section */
@@ -146,7 +164,7 @@
 /** Copyright *****************************************************************/
 
 	p.copyright,
-	p.copyright small { font-size: small }
+	p.copyright small { font-size: small; }
 
 /** Back to Top / ToC Toggle **************************************************/
 
@@ -158,14 +176,13 @@
 	@media not print {
 		#toc-nav {
 			position: fixed;
-			z-index: 2;
+			z-index: 3;
 			bottom: 0; left: 0;
 			margin: 0;
 			min-width: 1.33em;
 			border-top-right-radius: 2rem;
 			box-shadow: 0 0 2px;
 			font-size: 1.5em;
-			color: black;
 		}
 		#toc-nav > a {
 			display: block;
@@ -175,23 +192,32 @@
 			padding: .1em 0.3em;
 			margin: 0;
 
-			background: white;
 			box-shadow: 0 0 2px;
 			border: none;
 			border-top-right-radius: 1.33em;
+
+			color: #707070;
+			color: var(--tocnav-normal-text);
 			background: white;
+			background: var(--tocnav-normal-bg);
 		}
+		#toc-nav > a:hover,
+		#toc-nav > a:focus {
+			color: black;
+			color: var(--tocnav-hover-text);
+			background: #f8f8f8;
+			background: var(--tocnav-hover-bg);
+		}
+		#toc-nav > a:active {
+			color: #c00;
+			color: var(--tocnav-active-text);
+			background: white;
+			background: var(--tocnav-active-bg);
+		}
+
 		#toc-nav > #toc-jump {
 			padding-bottom: 2em;
 			margin-bottom: -1.9em;
-		}
-
-		#toc-nav > a:hover,
-		#toc-nav > a:focus {
-			background: #f8f8f8;
-		}
-		#toc-nav > a:not(:hover):not(:focus) {
-			color: #707070;
 		}
 
 		/* statusbar gets in the way on keyboard focus; remove once browsers fix */
@@ -205,26 +231,6 @@
 		}
 		#toc-nav > a > span + span {
 			padding-right: 0.2em;
-		}
-
-		#toc-toggle-inline {
-			vertical-align: 0.05em;
-			font-size: 80%;
-			color: gray;
-			color: hsla(203,20%,40%,.7);
-			border-style: none;
-			background: transparent;
-			position: relative;
-		}
-		#toc-toggle-inline:hover:not(:active),
-		#toc-toggle-inline:focus:not(:active) {
-			text-shadow: 1px 1px silver;
-			top: -1px;
-			left: -1px;
-		}
-
-		#toc-nav :active {
-			color: #C00;
 		}
 	}
 
@@ -243,10 +249,14 @@
 			padding: 0 1em;
 			padding-left: 42px;
 			padding-left: calc(1em + 26px);
+			color: black;
+			color: var(--tocsidebar-text);
 			background: inherit;
 			background-color: #f7f8f9;
+			background-color: var(--tocsidebar-bg);
 			z-index: 1;
 			box-shadow: -.1em 0 .25em rgba(0,0,0,.1) inset;
+			box-shadow: -.1em 0 .25em var(--tocsidebar-shadow) inset;
 		}
 		body.toc-sidebar #toc h2 {
 			margin-top: .8rem;
@@ -256,6 +266,7 @@
 			font-weight: bold;
 			color: gray;
 			color: hsla(203,20%,40%,.7);
+			color: var(--tocsidebar-heading-text);
 		}
 		body.toc-sidebar #toc-jump:not(:focus) {
 			width: 0;
@@ -283,10 +294,14 @@
 			padding: 0 1em;
 			padding-left: 42px;
 			padding-left: calc(1em + 26px);
+			color: black;
+			color: var(--tocsidebar-text);
 			background: inherit;
 			background-color: #f7f8f9;
+			background-color: var(--tocsidebar-bg);
 			z-index: 1;
 			box-shadow: -.1em 0 .25em rgba(0,0,0,.1) inset;
+			box-shadow: -.1em 0 .25em var(--tocsidebar-shadow) inset;
 		}
 		body:not(.toc-inline) #toc h2 {
 			margin-top: .8rem;
@@ -296,6 +311,7 @@
 			font-weight: bold;
 			color: gray;
 			color: hsla(203,20%,40%,.7);
+			color: var(--tocsidebar-heading-text);
 		}
 
 		body:not(.toc-inline) {
@@ -327,9 +343,9 @@
 		page-break-after: avoid;
 		page-break-inside: avoid;
 		font: 100% sans-serif;   /* Reset all font styling to clear out UA styles */
-		font-family: inherit;    /* Inherit the font family. */
-		line-height: 1.2;        /* Keep wrapped headings compact */
-		hyphens: manual;         /* Hyphenated headings look weird */
+		font-family: inherit;	/* Inherit the font family. */
+		line-height: 1.2;		/* Keep wrapped headings compact */
+		hyphens: manual;		/* Hyphenated headings look weird */
 	}
 
 	h2, h3, h4, h5, h6 {
@@ -338,7 +354,7 @@
 
 	h1, h2, h3 {
 		color: #005A9C;
-		background: transparent;
+		color: var(--heading-text);
 	}
 
 	h1 { font-size: 170%; }
@@ -365,11 +381,13 @@
 
 /** Section divider ***********************************************************/
 
-	:not(.head) > hr {
+	:not(.head) > :not(.head) + hr {
 		font-size: 1.5em;
 		text-align: center;
 		margin: 1em auto;
 		height: auto;
+		color: black;
+		color: var(--hr-text);
 		border: transparent solid 0;
 		background: transparent;
 	}
@@ -411,48 +429,51 @@
 	/* Style for algorithms */
 	ol.algorithm ol:not(.algorithm),
 	.algorithm > ol ol:not(.algorithm) {
-	 border-left: 0.5em solid #DEF;
+	border-left: 0.5em solid #DEF;
+	border-left: 0.5em solid var(--algo-border);
 	}
 
 	/* Put nice boxes around each algorithm. */
 	[data-algorithm]:not(.heading) {
-	  padding: .5em;
-	  border: thin solid #ddd; border-radius: .5em;
-	  margin: .5em calc(-0.5em - 1px);
+	 padding: .5em;
+	 border: thin solid #ddd;
+	 border: thin solid var(--algo-border);
+	 border-radius: .5em;
+	 margin: .5em calc(-0.5em - 1px);
 	}
 	[data-algorithm]:not(.heading) > :first-child {
-	  margin-top: 0;
+	 margin-top: 0;
 	}
 	[data-algorithm]:not(.heading) > :last-child {
-	  margin-bottom: 0;
+	 margin-bottom: 0;
 	}
 
 	/* Style for switch/case <dl>s */
 	dl.switch > dd > ol.only,
 	dl.switch > dd > .only > ol {
-	 margin-left: 0;
+	margin-left: 0;
 	}
 	dl.switch > dd > ol.algorithm,
 	dl.switch > dd > .algorithm > ol {
-	 margin-left: -2em;
+	margin-left: -2em;
 	}
 	dl.switch {
-	 padding-left: 2em;
+	padding-left: 2em;
 	}
 	dl.switch > dt {
-	 text-indent: -1.5em;
-	 margin-top: 1em;
+	text-indent: -1.5em;
+	margin-top: 1em;
 	}
 	dl.switch > dt + dt {
-	 margin-top: 0;
+	margin-top: 0;
 	}
 	dl.switch > dt::before {
-	 content: '\21AA';
-	 padding: 0 0.5em 0 0;
-	 display: inline-block;
-	 width: 1em;
-	 text-align: right;
-	 line-height: 0.5em;
+	content: '\21AA';
+	padding: 0 0.5em 0 0;
+	display: inline-block;
+	width: 1em;
+	text-align: right;
+	line-height: 0.5em;
 	}
 
 /** Terminology Markup ********************************************************/
@@ -470,7 +491,7 @@
 		font-style: normal;
 	}
 	dt dfn code, code.idl {
-		font-size: medium;
+		font-size: inherit;
 	}
 	dfn var {
 		font-style: normal;
@@ -478,8 +499,39 @@
 
 /** Change Marking ************************************************************/
 
-	del { color: red;  text-decoration: line-through; }
-	ins { color: #080; text-decoration: underline;    }
+	del {
+		color: #aa0000;
+		color: var(--del-text);
+		background: transparent;
+		background: var(--del-bg);
+		text-decoration: line-through;
+	}
+	ins {
+		color: #006100;
+		color: var(--ins-text);
+		background: transparent;
+		background: var(--ins-bg);
+		text-decoration: underline;
+	}
+
+	/* for amendments (candidate/proposed changes) */
+
+	.amendment ins, .correction ins, .addition ins,
+	ins[class^=c] {
+		text-decoration-style: dotted;
+	}
+	.amendment del, .correction del, .addition del,
+	del[class^=c] {
+		text-decoration-style: dotted;
+	}
+	.amendment.proposed ins, .correction.proposed ins, .addition.proposed ins,
+	ins[class^=c].proposed {
+		text-decoration-style: double;
+	}
+	.amendment.proposed del, .correction.proposed del, .addition.proposed del,
+	del[class^=c].proposed {
+		text-decoration-style: double;
+	}
 
 /** Miscellaneous improvements to inline formatting ***************************/
 
@@ -497,9 +549,14 @@
 	pre, code, samp {
 		font-family: Menlo, Consolas, "DejaVu Sans Mono", Monaco, monospace;
 		font-size: .9em;
-		page-break-inside: avoid;
 		hyphens: none;
 		text-transform: none;
+		text-align: left;
+		text-align: start;
+		font-variant: normal;
+		orphans: 3;
+		widows: 3;
+		page-break-before: avoid;
 	}
 	pre code,
 	code code {
@@ -514,7 +571,7 @@
 
 /** Inline Code fragments *****************************************************/
 
-  /* Do something nice. */
+	/* Do something nice. */
 
 /******************************************************************************/
 /*                                    Links                                   */
@@ -525,14 +582,19 @@
 	/* We hyperlink a lot, so make it less intrusive */
 	a[href] {
 		color: #034575;
+		color: var(--a-normal-text);
 		text-decoration: none;
 		border-bottom: 1px solid #707070;
+		border-bottom: 1px solid var(--a-normal-underline);
 		/* Need a bit of extending for it to look okay */
 		padding: 0 1px 0;
 		margin: 0 -1px 0;
 	}
 	a:visited {
-		border-bottom-color: #BBB;
+		color: #034575;
+		color: var(--a-visited-text);
+		border-bottom-color: #bbb;
+		border-bottom-color: var(--a-visited-underline);
 	}
 
 	/* Use distinguishing colors when user is interacting with the link */
@@ -540,12 +602,15 @@
 	a[href]:hover {
 		background: #f8f8f8;
 		background: rgba(75%, 75%, 75%, .25);
+		background: var(--a-hover-bg);
 		border-bottom-width: 3px;
 		margin-bottom: -2px;
 	}
 	a[href]:active {
-		color: #C00;
-		border-color: #C00;
+		color: #c00;
+		color: var(--a-active-text);
+		border-color: #c00;
+		border-color: var(--a-active-underline);
 	}
 
 	/* Backout above styling for W3C logo */
@@ -564,8 +629,13 @@
 		border-style: none;
 	}
 
+	img, svg {
+		/* Intentionally not color-scheme aware. */
+		background: white;
+	}
+
 	/* For autogen numbers, add
-	   .caption::before, figcaption::before { content: "Figure " counter(figure) ". "; }
+	  .caption::before, figcaption::before { content: "Figure " counter(figure) ". "; }
 	*/
 
 	figure, .figure, .sidefigure {
@@ -573,10 +643,11 @@
 		text-align: center;
 		margin: 2.5em 0;
 	}
-	.figure img,    .sidefigure img,    figure img,
+	.figure img,	.sidefigure img,	figure img,
 	.figure object, .sidefigure object, figure object {
 		max-width: 100%;
 		margin: auto;
+		height: auto;
 	}
 	.figure pre, .sidefigure pre, figure pre {
 		text-align: left;
@@ -590,7 +661,7 @@
 		.sidefigure {
 			float: right;
 			width: 50%;
-			margin: 0 0 0.5em 0.5em
+			margin: 0 0 0.5em 0.5em;
 		}
 	}
 	.caption, figcaption, caption {
@@ -605,13 +676,15 @@
 	}
 
 	/* DL list is indented 2em, but figure inside it is not */
-	dd > .figure, dd > figure { margin-left: -2em }
+	dd > .figure, dd > figure { margin-left: -2em; }
 
 /******************************************************************************/
 /*                             Colored Boxes                                  */
 /******************************************************************************/
 
-	.issue, .note, .example, .assertion, .advisement, blockquote {
+	.issue, .note, .example, .assertion, .advisement, blockquote,
+	.amendment, .correction, .addition {
+		margin: 1em auto;
 		padding: .5em;
 		border: .5em;
 		border-left-style: solid;
@@ -622,88 +695,117 @@
 		border-right-style: solid;
 	}
 
-	.issue,
-	.note,
-	.example,
-	.advisement,
-	.assertion,
-	blockquote {
-		margin: 1em auto;
-	}
+	blockquote > :first-child,
 	.note  > p:first-child,
 	.issue > p:first-child,
-	blockquote > :first-child {
+	.amendment > p:first-child,
+	.correction > p:first-child,
+	.addition > p:first-child {
 		margin-top: 0;
 	}
-	blockquote > :last-child {
+	blockquote > :last-child,
+	.note  > p:last-child,
+	.issue > p:last-child,
+	.amendment > p:last-child,
+	.correction > p:last-child,
+	.addition > p:last-child {
 		margin-bottom: 0;
+	}
+
+
+	.issue::before, .issue > .marker,
+	.example::before, .example > .marker,
+	.note::before, .note > .marker,
+	details.note > summary > .marker,
+	.amendment::before, .amendment > .marker,
+	details.amendment > summary > .marker,
+	.addition::before, .addition > .marker,
+	addition.amendment > summary > .marker,
+	.correction::before, .correction > .marker,
+	correction.amendment > summary > .marker
+	{
+		text-transform: uppercase;
+		padding-right: 1em;
+	}
+
+	.example::before, .example > .marker {
+		display: block;
+		padding-right: 0em;
 	}
 
 /** Blockquotes ***************************************************************/
 
 	blockquote {
 		border-color: silver;
+		border-color: var(--blockquote-border);
+		background: transparent;
+		background: var(--blockquote-bg);
+		color: currentcolor;
+		color: var(--blockquote-text);
 	}
 
 /** Open issue ****************************************************************/
 
 	.issue {
-		border-color: #E05252;
-		background: #FBE9E9;
+		border-color: #e05252;
+		border-color: var(--issue-border);
+		background: #fbe9e9;
+		background: var(--issue-bg);
+		color: black;
+		color: var(--issue-text);
 		counter-increment: issue;
 		overflow: auto;
 	}
 	.issue::before, .issue > .marker {
-		text-transform: uppercase;
-		color: #AE1E1E;
-		padding-right: 1em;
-		text-transform: uppercase;
+		color: #831616;
+		color: var(--issueheading-text);
 	}
 	/* Add .issue::before { content: "Issue " counter(issue) " "; } for autogen numbers,
-	   or use class="marker" to mark up the issue number in source. */
+	  or use class="marker" to mark up the issue number in source. */
 
 /** Example *******************************************************************/
 
 	.example {
-		border-color: #E0CB52;
-		background: #FCFAEE;
+		border-color: #e0cb52;
+		border-color: var(--example-border);
+		background: #fcfaee;
+		background: var(--example-bg);
+		color: black;
+		color: var(--example-text);
 		counter-increment: example;
 		overflow: auto;
 		clear: both;
 	}
 	.example::before, .example > .marker {
-		text-transform: uppercase;
-		color: #827017;
-		min-width: 7.5em;
-		display: block;
+		color: #574b0f;
+		color: var(--exampleheading-text);
 	}
 	/* Add .example::before { content: "Example " counter(example) " "; } for autogen numbers,
-	   or use class="marker" to mark up the example number in source. */
+	  or use class="marker" to mark up the example number in source. */
 
 /** Non-normative Note ********************************************************/
 
 	.note {
-		border-color: #52E052;
-		background: #E9FBE9;
+		border-color: #52e052;
+		border-color: var(--note-border);
+		background: #e9fbe9;
+		background: var(--note-bg);
+		color: black;
+		color: var(--note-text);
 		overflow: auto;
 	}
 
 	.note::before, .note > .marker,
-	details.note > summary::before,
-	details.note > summary > .marker {
-		text-transform: uppercase;
-		display: block;
-		color: hsl(120, 70%, 30%);
-	}
-	/* Add .note::before { content: "Note"; } for autogen label,
-	   or use class="marker" to mark up the label in source. */
-
 	details.note > summary {
-		display: block;
 		color: hsl(120, 70%, 30%);
+		color: var(--noteheading-text);
 	}
+	/* Add .note::before { content: "Note "; } for autogen label,
+	  or use class="marker" to mark up the label in source. */
+
 	details.note[open] > summary {
 		border-bottom: 1px silver solid;
+		border-bottom: 1px var(--notesummary-underline) solid;
 	}
 
 /** Assertion Box *************************************************************/
@@ -711,7 +813,11 @@
 
 	.assertion {
 		border-color: #AAA;
+		border-color: var(--assertion-border);
 		background: #EEE;
+		background: var(--assertion-bg);
+		color: black;
+		color: var(--assertion-text);
 	}
 
 /** Advisement Box ************************************************************/
@@ -719,15 +825,52 @@
 
 	.advisement {
 		border-color: orange;
+		border-color: var(--advisement-border);
 		border-style: none solid;
-		background: #FFEECC;
+		background: #fec;
+		background: var(--advisement-bg);
+		color: black;
+		color: var(--advisement-text);
 	}
 	strong.advisement {
 		display: block;
 		text-align: center;
 	}
-	.advisement > .marker {
-		color: #B35F00;
+	.advisement::before, .advisement > .marker {
+		color: #b35f00;
+		color: var(--advisementheading-text);
+	}
+
+/** Amendment Box *************************************************************/
+
+	.amendment, .correction, .addition {
+		border-color: #330099;
+		border-color: var(--amendment-border);
+		background: #F5F0FF;
+		background: var(--amendment-bg);
+		color: black;
+		color: var(--amendment-text);
+	}
+	.amendment.proposed, .correction.proposed, .addition.proposed {
+		border-style: solid;
+		border-block-width: 0.25em;
+	}
+	.amendment::before, .amendment > .marker,
+	details.amendment > summary::before, details.amendment > summary > .marker,
+	.correction::before, .correction > .marker,
+	details.correction > summary::before, details.correction > summary > .marker,
+	.addition::before, .addition > .marker,
+	details.addition > summary::before, details.addition > summary > .marker {
+		color: #220066;
+		color: var(--amendmentheading-text);
+	}
+	.amendment.proposed::before, .amendment.proposed > .marker,
+	details.amendment.proposed > summary::before, details.amendment.proposed > summary > .marker,
+	.correction.proposed::before, .correction.proposed > .marker,
+	details.correction.proposed > summary::before, details.correction.proposed > summary > .marker,
+	.addition.proposed::before, .addition.proposed > .marker,
+	details.addition.proposed > summary::before, details.addition.proposed > summary > .marker {
+		font-weight: bold;
 	}
 
 /** Spec Obsoletion Notice ****************************************************/
@@ -743,13 +886,16 @@
 	.annoying-warning:not(details),
 	details.annoying-warning:not([open]) > summary,
 	details.annoying-warning[open] {
-		background: #fdd;
-		color: red;
-		font-weight: bold;
+		background: hsla(40,100%,50%,0.95);
+		background: var(--warning-bg);
+		color: black;
+		color: var(--warning-text);
 		padding: .75em 1em;
-		border: thick red;
-		border-style: solid;
-		border-radius: 1em;
+		border: red;
+		border: var(--warning-border);
+		border-style: solid none;
+		box-shadow: 0 2px 8px black;
+		text-align: center;
 	}
 	.annoying-warning :last-child {
 		margin-bottom: 0;
@@ -758,9 +904,9 @@
 @media not print {
 	details.annoying-warning[open] {
 		position: fixed;
-		left: 1em;
-		right: 1em;
-		bottom: 1em;
+		left: 0;
+		right: 0;
+		bottom: 2em;
 		z-index: 1000;
 	}
 }
@@ -773,9 +919,13 @@
 
 	.def {
 		padding: .5em 1em;
-		background: #DEF;
+		background: #def;
+		background: var(--def-bg);
 		margin: 1.2em 0;
-		border-left: 0.5em solid #8CCBF2;
+		border-left: 0.5em solid #8ccbf2;
+		border-left: 0.5em solid var(--def-border);
+		color: black;
+		color: var(--def-text);
 	}
 
 /******************************************************************************/
@@ -800,6 +950,7 @@
 		padding: 0.5em;
 		vertical-align: baseline;
 		border-bottom: 1px solid #bbd7e9;
+		border-bottom: 1px solid var(--defrow-border);
 	}
 
 	table.def > tbody > tr:last-child th,
@@ -820,10 +971,10 @@
 	}
 
 	/* A footnote at the bottom of a def table */
-	table.def           td.footnote {
+	table.def td.footnote {
 		padding-top: 0.6em;
 	}
-	table.def           td.footnote::before {
+	table.def td.footnote::before {
 		content: " ";
 		display: block;
 		height: 0.6em;
@@ -833,15 +984,15 @@
 
 /** Data tables (and properly marked-up index tables) *************************/
 	/*
-		 <table class="data"> highlights structural relationships in a table
-		 when correct markup is used (e.g. thead/tbody, th vs. td, scope attribute)
+		<table class="data"> highlights structural relationships in a table
+		when correct markup is used (e.g. thead/tbody, th vs. td, scope attribute)
 
-		 Use class="complex data" for particularly complicated tables --
-		 (This will draw more lines: busier, but clearer.)
+		Use class="complex data" for particularly complicated tables --
+		(This will draw more lines: busier, but clearer.)
 
-		 Use class="long" on table cells with paragraph-like contents
-		 (This will adjust text alignment accordingly.)
-		 Alternately use class="longlastcol" on tables, to have the last column assume "long".
+		Use class="long" on table cells with paragraph-like contents
+		(This will adjust text alignment accordingly.)
+		Alternately use class="longlastcol" on tables, to have the last column assume "long".
 	*/
 
 	table {
@@ -868,6 +1019,7 @@
 		padding: 0.5em 1em;
 		border-width: 1px;
 		border-color: silver;
+		border-color: var(--datacell-border);
 		border-top-style: solid;
 	}
 
@@ -892,6 +1044,7 @@
 	table.index tbody th:first-child  {
 		border-right: 2px solid;
 		border-top: 1px solid silver;
+		border-top: 1px solid var(--datacell-border);
 		padding-right: 1em;
 	}
 
@@ -903,13 +1056,14 @@
 	table.complex.data th,
 	table.complex.data td {
 		border: 1px solid silver;
+		border: 1px solid var(--datacell-border);
 		text-align: center;
 	}
 
 	table.data.longlastcol td:last-child,
 	table.data td.long {
-	 vertical-align: baseline;
-	 text-align: left;
+		vertical-align: baseline;
+		text-align: left;
 	}
 
 	table.data img {
@@ -967,12 +1121,15 @@ Possible extra rowspan handling
 		display: block;
 		/* Reverse color scheme */
 		color: black;
-		border-color: #3980B5;
-		border-bottom-width: 3px !important;
-		margin-bottom: 0px !important;
+		color: var(--toclink-text);
+		border-color: #3980b5;
+		border-color: var(--toclink-underline);
 	}
 	.toc a:visited {
+		color: black;
+		color: var(--toclink-visited-text);
 		border-color: #054572;
+		border-color: var(--toclink-visited-underline);
 	}
 	.toc a:not(:focus):not(:hover) {
 		/* Allow colors to cascade through from link styling */
@@ -984,22 +1141,22 @@ Possible extra rowspan handling
 		/* because generated content isn't search/selectable and markers can't do multilevel yet */
 		margin:  0;
 		padding: 0;
-		line-height: 1.1rem; /* consistent spacing */
+	}
+	.toc {
+		line-height: 1.1em;
 	}
 
 	/* ToC not indented until third level, but font style & margins show hierarchy */
-	.toc > li             { font-weight: bold;   }
-	.toc > li li          { font-weight: normal; }
-	.toc > li li li       { font-size:   95%;    }
-	.toc > li li li li    { font-size:   90%;    }
-	.toc > li li li li .secno { font-size: 85%; }
-	.toc > li li li li li { font-size:   85%;    }
-	.toc > li li li li li .secno { font-size: 100%; }
+	.toc > li			{ font-weight: bold;   }
+	.toc > li li		 { font-weight: normal; }
+	.toc > li li li	  { font-size:   95%;	}
+	.toc > li li li li	{ font-size:   90%;	}
+	.toc > li li li li li { font-size:   85%;	}
 
 	/* @supports not (display:grid) { */
-		.toc > li             { margin: 1.5rem 0;    }
-		.toc > li li          { margin: 0.3rem 0;    }
-		.toc > li li li       { margin-left: 2rem;   }
+		.toc > li			{ margin: 1.5rem 0;	}
+		.toc > li li		 { margin: 0.3rem 0;	}
+		.toc > li li li	  { margin-left: 2rem;   }
 
 		/* Section numbers in a column of their own */
 		.toc .secno {
@@ -1007,29 +1164,40 @@ Possible extra rowspan handling
 			width: 4rem;
 			white-space: nowrap;
 		}
+		.toc > li li li li .secno { font-size: 85%; }
+		.toc > li li li li li .secno { font-size: 100%; }
 
 		.toc li {
 			clear: both;
 		}
 
-		:not(li) > .toc              { margin-left:  5rem; }
-		.toc .secno                  { margin-left: -5rem; }
-		.toc > li li li .secno       { margin-left: -7rem; }
-		.toc > li li li li .secno    { margin-left: -9rem; }
+		:not(li) > .toc			 { margin-left:  5rem; }
+		.toc .secno				 { margin-left: -5rem; }
+		.toc > li li li .secno	  { margin-left: -7rem; }
+		.toc > li li li li .secno	{ margin-left: -9rem; }
 		.toc > li li li li li .secno { margin-left: -11rem; }
 
 		/* Tighten up indentation in narrow ToCs */
 		@media (max-width: 30em) {
-			:not(li) > .toc              { margin-left:  4rem; }
-			.toc .secno                  { margin-left: -4rem; }
-			.toc > li li li              { margin-left:  1rem; }
-			.toc > li li li .secno       { margin-left: -5rem; }
-			.toc > li li li li .secno    { margin-left: -6rem; }
+			:not(li) > .toc			 { margin-left:  4rem; }
+			.toc .secno				 { margin-left: -4rem; }
+			.toc > li li li			 { margin-left:  1rem; }
+			.toc > li li li .secno	  { margin-left: -5rem; }
+			.toc > li li li li .secno	{ margin-left: -6rem; }
 			.toc > li li li li li .secno { margin-left: -7rem; }
 		}
+		/* Loosen it on wide screens */
+		@media screen and (min-width: 78em) {
+			body:not(.toc-inline) :not(li) > .toc			 { margin-left:  4rem; }
+			body:not(.toc-inline) .toc .secno				 { margin-left: -4rem; }
+			body:not(.toc-inline) .toc > li li li			 { margin-left:  1rem; }
+			body:not(.toc-inline) .toc > li li li .secno	  { margin-left: -5rem; }
+			body:not(.toc-inline) .toc > li li li li .secno	{ margin-left: -6rem; }
+			body:not(.toc-inline) .toc > li li li li li .secno { margin-left: -7rem; }
+	}
 	/* } */
 
-	@supports (display:grid) {
+	@supports (display:grid) and (display:contents) {
 		/* Use #toc over .toc to override non-@supports rules. */
 		#toc {
 			display: grid;
@@ -1055,7 +1223,7 @@ Possible extra rowspan handling
 		}
 		#toc > .toc > li > a > span {
 			/* The spans of the top-level list,
-			   comprising the first items of each top-level section. */
+			  comprising the first items of each top-level section. */
 			margin-top: 1.1rem;
 		}
 		#toc#toc .secno { /* Ugh, need more specificity to override base.css */
@@ -1068,9 +1236,12 @@ Possible extra rowspan handling
 			width: auto;
 			margin-right: 1rem;
 		}
-		#toc .content:hover {
+		#toc .content:hover,
+		#toc .content:focus {
 			background: rgba(75%, 75%, 75%, .25);
+			background: var(--a-hover-bg);
 			border-bottom: 3px solid #054572;
+			border-bottom: 3px solid var(--toclink-underline);
 			margin-bottom: -3px;
 		}
 		#toc li li li .content {
@@ -1085,22 +1256,23 @@ Possible extra rowspan handling
 /** Index *********************************************************************/
 
 	/* Index Lists: Layout */
-	ul.index       { margin-left: 0; columns: 15em; text-indent: 1em hanging; }
-	ul.index li    { margin-left: 0; list-style: none; break-inside: avoid; }
-	ul.index li li { margin-left: 1em }
-	ul.index dl    { margin-top: 0; }
-	ul.index dt    { margin: .2em 0 .2em 20px;}
-	ul.index dd    { margin: .2em 0 .2em 40px;}
+	ul.index	  { margin-left: 0; columns: 15em; text-indent: 1em hanging; }
+	ul.index li	{ margin-left: 0; list-style: none; break-inside: avoid; }
+	ul.index li li { margin-left: 1em; }
+	ul.index dl	{ margin-top: 0; }
+	ul.index dt	{ margin: .2em 0 .2em 20px;}
+	ul.index dd	{ margin: .2em 0 .2em 40px;}
 	/* Index Lists: Typography */
 	ul.index ul,
 	ul.index dl { font-size: smaller; }
 	@media not print {
-		ul.index li span {
+		ul.index li span:not(.dfn-paneled) {
 			white-space: nowrap;
 			color: transparent; }
 		ul.index li a:hover + span,
 		ul.index li a:focus + span {
 			color: #707070;
+			color: var(--indexinfo-text);
 		}
 	}
 
@@ -1122,13 +1294,101 @@ Possible extra rowspan handling
 
 	table.index tr:hover td:not([rowspan]),
 	table.index tr:hover th:not([rowspan]) {
+		color: black;
+		color: var(--indextable-hover-text);
 		background: #f7f8f9;
+		background: var(--indextable-hover-bg);
 	}
 
 	/* The link in the first column in the property table (formerly a TD) */
 	table.index th:first-child a {
 		font-weight: bold;
 	}
+
+/** Outdated warning **********************************************************/
+
+.outdated-spec {
+	color: black;
+	color: var(--outdatedspec-text);
+	background-color: rgba(0,0,0,0.5);
+	background-color: var(--outdatedspec-bg);
+}
+
+.outdated-warning {
+	position: fixed;
+	bottom: 50%;
+	left: 0;
+	right: 0;
+	margin: 0 auto;
+	width: 50%;
+	background: maroon;
+	background: var(--outdated-bg);
+	color: white;
+	color: var(--outdated-text);
+	border-radius: 1em;
+	box-shadow: 0 0 1em red;
+	box-shadow: 0 0 1em var(--outdated-shadow);
+	padding: 2em;
+	text-align: center;
+	z-index: 2;
+}
+
+.outdated-warning a {
+	color: currentcolor;
+	background: transparent;
+}
+
+.edited-rec-warning {
+	background: darkorange;
+	background: var(--editedrec-bg);
+	box-shadow: 0 0 1em;
+}
+
+.outdated-warning button {
+	color: var(--outdated-text);
+	border-radius: 1em;
+	box-shadow: 0 0 1em red;
+	box-shadow: 0 0 1em var(--outdated-shadow);
+	padding: 2em;
+	text-align: center;
+	z-index: 2;
+}
+
+.outdated-warning a {
+	color: currentcolor;
+	background: transparent;
+}
+
+.edited-rec-warning {
+	background: darkorange;
+	background: var(--editedrec-bg);
+	box-shadow: 0 0 1em;
+}
+
+.outdated-warning button {
+	position: absolute;
+	top: 0;
+	right:0;
+	margin: 0;
+	border: 0;
+	padding: 0.25em 0.5em;
+	background: transparent;
+	color: white;
+	color: var(--outdated-text);
+	font:1em sans-serif;
+	text-align:center;
+}
+
+.outdated-warning span {
+	display: block;
+}
+
+.outdated-collapsed {
+	bottom: 0;
+	border-radius: 0;
+	width: 100%;
+	padding: 0;
+}
 
 /******************************************************************************/
 /*                                    Print                                   */
@@ -1143,17 +1403,20 @@ Possible extra rowspan handling
 		body {
 			font-family: serif;
 		}
+
+		.outdated-warning {
+			position: absolute;
+			border-style: solid;
+			border-color: red;
+		}
+
+		.outdated-warning input {
+			display: none;
+		}
 	}
 	@page {
 		margin: 1.5cm 1.1cm;
 	}
-
-/******************************************************************************/
-/*                                    Legacy                                  */
-/******************************************************************************/
-
-	/* This rule is inherited from past style sheets. No idea what it's for. */
-	.hide { display: none }
 
 
 
@@ -1167,6 +1430,18 @@ Possible extra rowspan handling
 		margin-left: auto;
 		margin-right: auto;
 	}
+	.overlarge {
+		/* Magic to create good item positioning:
+		  "content column" is 50ems wide at max; less on smaller screens.
+		  Extra space (after ToC + content) is empty on the right.
+
+		  1. When item < content column, centers item in column.
+		  2. When content < item < available, left-aligns.
+		  3. When item > available, fills available + scroll bar.
+		*/
+		display: grid;
+		grid-template-columns: minmax(0, 50em);
+	}
 	.overlarge > table {
 		/* limit preferred width of table */
 		max-width: 50em;
@@ -1176,7 +1451,6 @@ Possible extra rowspan handling
 
 	@media (min-width: 55em) {
 		.overlarge {
-			margin-left: calc(13px + 26.5rem - 50vw);
 			margin-right: calc(13px + 26.5rem - 50vw);
 			max-width: none;
 		}
@@ -1184,14 +1458,12 @@ Possible extra rowspan handling
 	@media screen and (min-width: 78em) {
 		body:not(.toc-inline) .overlarge {
 			/* 30.5em body padding 50em content area */
-			margin-left: calc(40em - 50vw) !important;
 			margin-right: calc(40em - 50vw) !important;
 		}
 	}
 	@media screen and (min-width: 90em) {
 		body:not(.toc-inline) .overlarge {
 			/* 4em html margin 30.5em body padding 50em content area */
-			margin-left: 0 !important;
 			margin-right: calc(84.5em - 100vw) !important;
 		}
 	}
@@ -1200,122 +1472,25 @@ Possible extra rowspan handling
 		.overlarge {
 			overflow-x: auto;
 			/* See Lea Verou's explanation background-attachment:
-			 * http://lea.verou.me/2012/04/background-attachment-local/
-			 *
+			* http://lea.verou.me/2012/04/background-attachment-local/
+			*
 			background: top left  / 4em 100% linear-gradient(to right,  #ffffff, rgba(255, 255, 255, 0)) local,
-			            top right / 4em 100% linear-gradient(to left, #ffffff, rgba(255, 255, 255, 0)) local,
-			            top left  / 1em 100% linear-gradient(to right,  #c3c3c5, rgba(195, 195, 197, 0)) scroll,
-			            top right / 1em 100% linear-gradient(to left, #c3c3c5, rgba(195, 195, 197, 0)) scroll,
-			            white;
+						top right / 4em 100% linear-gradient(to left, #ffffff, rgba(255, 255, 255, 0)) local,
+						top left  / 1em 100% linear-gradient(to right,  #c3c3c5, rgba(195, 195, 197, 0)) scroll,
+						top right / 1em 100% linear-gradient(to left, #c3c3c5, rgba(195, 195, 197, 0)) scroll,
+						white;
 			background-repeat: no-repeat;
 			*/
 		}
 	}
 </style>
-  <link href="https://www.w3.org/StyleSheets/TR/2016/W3C-ED" rel="stylesheet">
-  <meta content="Bikeshed version 872cce6d3026423d677f3bd5837f1a1a46299a04" name="generator">
+  <link href="https://www.w3.org/StyleSheets/TR/2016/cg-draft" rel="stylesheet">
+  <meta content="Bikeshed version c5172e83, updated Fri Nov 20 15:35:20 2020 -0800" name="generator">
   <link href="https://wicg.github.io/largest-contentful-paint" rel="canonical">
-  <meta content="8bb6ce628cdf8400caf844f7955657a46bd37e18" name="document-revision">
-<style>/* style-md-lists */
-
-/* This is a weird hack for me not yet following the commonmark spec
-   regarding paragraph and lists. */
-[data-md] > :first-child {
-    margin-top: 0;
-}
-[data-md] > :last-child {
-    margin-bottom: 0;
-}</style>
-<style>/* style-selflinks */
-
-.heading, .issue, .note, .example, li, dt {
-    position: relative;
-}
-a.self-link {
-    position: absolute;
-    top: 0;
-    left: calc(-1 * (3.5rem - 26px));
-    width: calc(3.5rem - 26px);
-    height: 2em;
-    text-align: center;
-    border: none;
-    transition: opacity .2s;
-    opacity: .5;
-}
-a.self-link:hover {
-    opacity: 1;
-}
-.heading > a.self-link {
-    font-size: 83%;
-}
-li > a.self-link {
-    left: calc(-1 * (3.5rem - 26px) - 2em);
-}
-dfn > a.self-link {
-    top: auto;
-    left: auto;
-    opacity: 0;
-    width: 1.5em;
-    height: 1.5em;
-    background: gray;
-    color: white;
-    font-style: normal;
-    transition: opacity .2s, background-color .2s, color .2s;
-}
-dfn:hover > a.self-link {
-    opacity: 1;
-}
-dfn > a.self-link:hover {
-    color: black;
-}
-
-a.self-link::before            { content: "¶"; }
-.heading > a.self-link::before { content: "§"; }
-dfn > a.self-link::before      { content: "#"; }</style>
-<style>/* style-counters */
-
-body {
-    counter-reset: example figure issue;
-}
-.issue {
-    counter-increment: issue;
-}
-.issue:not(.no-marker)::before {
-    content: "Issue " counter(issue);
-}
-
-.example {
-    counter-increment: example;
-}
-.example:not(.no-marker)::before {
-    content: "Example " counter(example);
-}
-.invalid.example:not(.no-marker)::before,
-.illegal.example:not(.no-marker)::before {
-    content: "Invalid Example" counter(example);
-}
-
-figcaption {
-    counter-increment: figure;
-}
-figcaption:not(.no-marker)::before {
-    content: "Figure " counter(figure) " ";
-}</style>
-<style>/* style-var-click-highlighting */
-
-    var { cursor: pointer; }
-    var.selected0 { background-color: #F4D200; box-shadow: 0 0 0 2px #F4D200; }
-    var.selected1 { background-color: #FF87A2; box-shadow: 0 0 0 2px #FF87A2; }
-    var.selected2 { background-color: #96E885; box-shadow: 0 0 0 2px #96E885; }
-    var.selected3 { background-color: #3EEED2; box-shadow: 0 0 0 2px #3EEED2; }
-    var.selected4 { background-color: #EACFB6; box-shadow: 0 0 0 2px #EACFB6; }
-    var.selected5 { background-color: #82DDFF; box-shadow: 0 0 0 2px #82DDFF; }
-    var.selected6 { background-color: #FFBCF2; box-shadow: 0 0 0 2px #FFBCF2; }
-    </style>
 <style>/* style-autolinks */
 
 .css.css, .property.property, .descriptor.descriptor {
-    color: #005a9c;
+    color: var(--a-normal-text);
     font-size: inherit;
     font-family: inherit;
 }
@@ -1374,8 +1549,150 @@ pre .property::before, pre .property::after {
 [data-link-type=biblio] {
     white-space: pre;
 }</style>
+<style>/* style-colors */
+
+/* Any --*-text not paired with a --*-bg is assumed to have a transparent bg */
+:root {
+    color-scheme: light dark;
+
+    --text: black;
+    --bg: white;
+
+    --unofficial-watermark: url(https://www.w3.org/StyleSheets/TR/2016/logos/UD-watermark);
+
+    --logo-bg: #1a5e9a;
+    --logo-active-bg: #c00;
+    --logo-text: white;
+
+    --tocnav-normal-text: #707070;
+    --tocnav-normal-bg: var(--bg);
+    --tocnav-hover-text: var(--tocnav-normal-text);
+    --tocnav-hover-bg: #f8f8f8;
+    --tocnav-active-text: #c00;
+    --tocnav-active-bg: var(--tocnav-normal-bg);
+
+    --tocsidebar-text: var(--text);
+    --tocsidebar-bg: #f7f8f9;
+    --tocsidebar-shadow: rgba(0,0,0,.1);
+    --tocsidebar-heading-text: hsla(203,20%,40%,.7);
+
+    --toclink-text: var(--text);
+    --toclink-underline: #3980b5;
+    --toclink-visited-text: var(--toclink-text);
+    --toclink-visited-underline: #054572;
+
+    --heading-text: #005a9c;
+
+    --hr-text: var(--text);
+
+    --algo-border: #def;
+
+    --del-text: red;
+    --del-bg: transparent;
+    --ins-text: #080;
+    --ins-bg: transparent;
+
+    --a-normal-text: #034575;
+    --a-normal-underline: #707070;
+    --a-visited-text: var(--a-normal-text);
+    --a-visited-underline: #bbb;
+    --a-hover-bg: rgba(75%, 75%, 75%, .25);
+    --a-active-text: #c00;
+    --a-active-underline: #c00;
+
+    --blockquote-border: silver;
+    --blockquote-bg: transparent;
+    --blockquote-text: currentcolor;
+
+    --issue-border: #e05252;
+    --issue-bg: #fbe9e9;
+    --issue-text: var(--text);
+    --issueheading-text: #831616;
+
+    --example-border: #e0cb52;
+    --example-bg: #fcfaee;
+    --example-text: var(--text);
+    --exampleheading-text: #574b0f;
+
+    --note-border: #52e052;
+    --note-bg: #e9fbe9;
+    --note-text: var(--text);
+    --noteheading-text: hsl(120, 70%, 30%);
+    --notesummary-underline: silver;
+
+    --assertion-border: #aaa;
+    --assertion-bg: #eee;
+    --assertion-text: black;
+
+    --advisement-border: orange;
+    --advisement-bg: #fec;
+    --advisement-text: var(--text);
+    --advisementheading-text: #b35f00;
+
+    --warning-border: red;
+    --warning-bg: hsla(40,100%,50%,0.95);
+    --warning-text: var(--text);
+
+    --amendment-border: #330099;
+    --amendment-bg: #F5F0FF;
+    --amendment-text: var(--text);
+    --amendmentheading-text: #220066;
+
+    --def-border: #8ccbf2;
+    --def-bg: #def;
+    --def-text: var(--text);
+    --defrow-border: #bbd7e9;
+
+    --datacell-border: silver;
+
+    --indexinfo-text: #707070;
+
+    --indextable-hover-text: black;
+    --indextable-hover-bg: #f7f8f9;
+
+    --outdatedspec-bg: rgba(0, 0, 0, .5);
+    --outdatedspec-text: black;
+    --outdated-bg: maroon;
+    --outdated-text: white;
+    --outdated-shadow: red;
+
+    --editedrec-bg: darkorange;
+}</style>
+<style>/* style-counters */
+
+body {
+    counter-reset: example figure issue;
+}
+.issue {
+    counter-increment: issue;
+}
+.issue:not(.no-marker)::before {
+    content: "Issue " counter(issue);
+}
+
+.example {
+    counter-increment: example;
+}
+.example:not(.no-marker)::before {
+    content: "Example " counter(example);
+}
+.invalid.example:not(.no-marker)::before,
+.illegal.example:not(.no-marker)::before {
+    content: "Invalid Example" counter(example);
+}
+
+figcaption {
+    counter-increment: figure;
+}
+figcaption:not(.no-marker)::before {
+    content: "Figure " counter(figure) " ";
+}</style>
 <style>/* style-dfn-panel */
 
+:root {
+    --dfnpanel-bg: #ddd;
+    --dfnpanel-text: var(--text);
+}
 .dfn-panel {
     position: absolute;
     z-index: 35;
@@ -1387,14 +1704,14 @@ pre .property::before, pre .property::after {
     overflow: auto;
     padding: 0.5em 0.75em;
     font: small Helvetica Neue, sans-serif, Droid Sans Fallback;
-    background: #DDDDDD;
-    color: black;
+    background: var(--dfnpanel-bg);
+    color: var(--dfnpanel-text);
     border: outset 0.2em;
 }
 .dfn-panel:not(.on) { display: none; }
 .dfn-panel * { margin: 0; padding: 0; text-indent: 0; }
 .dfn-panel > b { display: block; }
-.dfn-panel a { color: black; }
+.dfn-panel a { color: var(--dfnpanel-text); }
 .dfn-panel a:not(:hover) { text-decoration: none !important; border-bottom: none !important; }
 .dfn-panel > b + b { margin-top: 0.25em; }
 .dfn-panel ul { padding: 0; }
@@ -1411,11 +1728,78 @@ pre .property::before, pre .property::after {
 
 .dfn-paneled { cursor: pointer; }
 </style>
+<style>/* style-md-lists */
+
+/* This is a weird hack for me not yet following the commonmark spec
+   regarding paragraph and lists. */
+[data-md] > :first-child {
+    margin-top: 0;
+}
+[data-md] > :last-child {
+    margin-bottom: 0;
+}</style>
+<style>/* style-selflinks */
+
+:root {
+    --selflink-text: white;
+    --selflink-bg: gray;
+    --selflink-hover-text: black;
+}
+.heading, .issue, .note, .example, li, dt {
+    position: relative;
+}
+a.self-link {
+    position: absolute;
+    top: 0;
+    left: calc(-1 * (3.5rem - 26px));
+    width: calc(3.5rem - 26px);
+    height: 2em;
+    text-align: center;
+    border: none;
+    transition: opacity .2s;
+    opacity: .5;
+}
+a.self-link:hover {
+    opacity: 1;
+}
+.heading > a.self-link {
+    font-size: 83%;
+}
+li > a.self-link {
+    left: calc(-1 * (3.5rem - 26px) - 2em);
+}
+dfn > a.self-link {
+    top: auto;
+    left: auto;
+    opacity: 0;
+    width: 1.5em;
+    height: 1.5em;
+    background: var(--selflink-bg);
+    color: var(--selflink-text);
+    font-style: normal;
+    transition: opacity .2s, background-color .2s, color .2s;
+}
+dfn:hover > a.self-link {
+    opacity: 1;
+}
+dfn > a.self-link:hover {
+    color: var(--selflink-hover-text);
+}
+
+a.self-link::before            { content: "¶"; }
+.heading > a.self-link::before { content: "§"; }
+dfn > a.self-link::before      { content: "#"; }
+</style>
 <style>/* style-syntax-highlighting */
-pre.idl.highlight { color: #708090; }
-.highlight:not(.idl) { background: hsl(24, 20%, 95%); }
+
+            pre.idl.highlight {
+                background: var(--borderedblock-bg, var(--def-bg));
+            }
+            
 code.highlight { padding: .1em; border-radius: .3em; }
 pre.highlight, pre > code.highlight { display: block; padding: 1em; margin: .5em 0; overflow: auto; border-radius: 0; }
+
+.highlight:not(.idl) { background: rgba(0, 0, 0, .03); }
 c-[a] { color: #990055 } /* Keyword.Declaration */
 c-[b] { color: #990055 } /* Keyword.Type */
 c-[c] { color: #708090 } /* Comment */
@@ -1469,11 +1853,212 @@ c-[vg] { color: #0077aa } /* Name.Variable.Global */
 c-[vi] { color: #0077aa } /* Name.Variable.Instance */
 c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
 </style>
+<style>/* style-var-click-highlighting */
+
+    var { cursor: pointer; }
+    var.selected0 { background-color: #F4D200; box-shadow: 0 0 0 2px #F4D200; }
+    var.selected1 { background-color: #FF87A2; box-shadow: 0 0 0 2px #FF87A2; }
+    var.selected2 { background-color: #96E885; box-shadow: 0 0 0 2px #96E885; }
+    var.selected3 { background-color: #3EEED2; box-shadow: 0 0 0 2px #3EEED2; }
+    var.selected4 { background-color: #EACFB6; box-shadow: 0 0 0 2px #EACFB6; }
+    var.selected5 { background-color: #82DDFF; box-shadow: 0 0 0 2px #82DDFF; }
+    var.selected6 { background-color: #FFBCF2; box-shadow: 0 0 0 2px #FFBCF2; }
+    </style>
+<style>/* style-darkmode */
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --text: #ddd;
+        --bg: black;
+
+        --unofficial-watermark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cg fill='%23100808' transform='translate(200 200) rotate(-45) translate(-200 -200)' stroke='%23100808' stroke-width='3'%3E%3Ctext x='50%25' y='220' style='font: bold 70px sans-serif; text-anchor: middle; letter-spacing: 6px;'%3EUNOFFICIAL%3C/text%3E%3Ctext x='50%25' y='305' style='font: bold 70px sans-serif; text-anchor: middle; letter-spacing: 6px;'%3EDRAFT%3C/text%3E%3C/g%3E%3C/svg%3E");
+
+        --logo-bg: #1a5e9a;
+        --logo-active-bg: #c00;
+        --logo-text: white;
+
+        --tocnav-normal-text: #999;
+        --tocnav-normal-bg: var(--bg);
+        --tocnav-hover-text: var(--tocnav-normal-text);
+        --tocnav-hover-bg: #080808;
+        --tocnav-active-text: #f44;
+        --tocnav-active-bg: var(--tocnav-normal-bg);
+
+        --tocsidebar-text: var(--text);
+        --tocsidebar-bg: #080808;
+        --tocsidebar-shadow: rgba(255,255,255,.1);
+        --tocsidebar-heading-text: hsla(203,20%,40%,.7);
+
+        --toclink-text: var(--text);
+        --toclink-underline: #6af;
+        --toclink-visited-text: var(--toclink-text);
+        --toclink-visited-underline: #054572;
+
+        --heading-text: #8af;
+
+        --hr-text: var(--text);
+
+        --algo-border: #456;
+
+        --del-text: #f44;
+        --del-bg: transparent;
+        --ins-text: #4a4;
+        --ins-bg: transparent;
+
+        --a-normal-text: #6af;
+        --a-normal-underline: #555;
+        --a-visited-text: var(--a-normal-text);
+        --a-visited-underline: var(--a-normal-underline);
+        --a-hover-bg: rgba(25%, 25%, 25%, .2);
+        --a-active-text: #f44;
+        --a-active-underline: var(--a-active-text);
+
+        --borderedblock-bg: rgba(255, 255, 255, .05);
+
+        --blockquote-border: silver;
+        --blockquote-bg: var(--borderedblock-bg);
+        --blockquote-text: currentcolor;
+
+        --issue-border: #e05252;
+        --issue-bg: var(--borderedblock-bg);
+        --issue-text: var(--text);
+        --issueheading-text: hsl(0deg, 70%, 70%);
+
+        --example-border: hsl(50deg, 90%, 60%);
+        --example-bg: var(--borderedblock-bg);
+        --example-text: var(--text);
+        --exampleheading-text: hsl(50deg, 70%, 70%);
+
+        --note-border: hsl(120deg, 100%, 35%);
+        --note-bg: var(--borderedblock-bg);
+        --note-text: var(--text);
+        --noteheading-text: hsl(120, 70%, 70%);
+        --notesummary-underline: silver;
+
+        --assertion-border: #444;
+        --assertion-bg: var(--borderedblock-bg);
+        --assertion-text: var(--text);
+
+        --advisement-border: orange;
+        --advisement-bg: #222218;
+        --advisement-text: var(--text);
+        --advisementheading-text: #f84;
+
+        --warning-border: red;
+        --warning-bg: hsla(40,100%,20%,0.95);
+        --warning-text: var(--text);
+
+        --amendment-border: #330099;
+        --amendment-bg: #080010;
+        --amendment-text: var(--text);
+        --amendmentheading-text: #cc00ff;
+
+        --def-border: #8ccbf2;
+        --def-bg: #080818;
+        --def-text: var(--text);
+        --defrow-border: #136;
+
+        --datacell-border: silver;
+
+        --indexinfo-text: #aaa;
+
+        --indextable-hover-text: var(--text);
+        --indextable-hover-bg: #181818;
+
+        --outdatedspec-bg: rgba(255, 255, 255, .5);
+        --outdatedspec-text: black;
+        --outdated-bg: maroon;
+        --outdated-text: white;
+        --outdated-shadow: red;
+
+        --editedrec-bg: darkorange;
+    }
+    /* In case a transparent-bg image doesn't expect to be on a dark bg,
+       which is quite common in practice... */
+    img { background: white; }
+}
+@media (prefers-color-scheme: dark) {
+    :root {
+        --selflink-text: black;
+        --selflink-bg: silver;
+        --selflink-hover-text: white;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --dfnpanel-bg: #222;
+        --dfnpanel-text: var(--text);
+    }
+}
+@media (prefers-color-scheme: dark) {
+    .highlight:not(.idl) { background: rgba(255, 255, 255, .05); }
+
+    c-[a] { color: #d33682 } /* Keyword.Declaration */
+    c-[b] { color: #d33682 } /* Keyword.Type */
+    c-[c] { color: #2aa198 } /* Comment */
+    c-[d] { color: #2aa198 } /* Comment.Multiline */
+    c-[e] { color: #268bd2 } /* Name.Attribute */
+    c-[f] { color: #b58900 } /* Name.Tag */
+    c-[g] { color: #cb4b16 } /* Name.Variable */
+    c-[k] { color: #d33682 } /* Keyword */
+    c-[l] { color: #657b83 } /* Literal */
+    c-[m] { color: #657b83 } /* Literal.Number */
+    c-[n] { color: #268bd2 } /* Name */
+    c-[o] { color: #657b83 } /* Operator */
+    c-[p] { color: #657b83 } /* Punctuation */
+    c-[s] { color: #6c71c4 } /* Literal.String */
+    c-[t] { color: #6c71c4 } /* Literal.String.Single */
+    c-[u] { color: #6c71c4 } /* Literal.String.Double */
+    c-[ch] { color: #2aa198 } /* Comment.Hashbang */
+    c-[cp] { color: #2aa198 } /* Comment.Preproc */
+    c-[cpf] { color: #2aa198 } /* Comment.PreprocFile */
+    c-[c1] { color: #2aa198 } /* Comment.Single */
+    c-[cs] { color: #2aa198 } /* Comment.Special */
+    c-[kc] { color: #d33682 } /* Keyword.Constant */
+    c-[kn] { color: #d33682 } /* Keyword.Namespace */
+    c-[kp] { color: #d33682 } /* Keyword.Pseudo */
+    c-[kr] { color: #d33682 } /* Keyword.Reserved */
+    c-[ld] { color: #657b83 } /* Literal.Date */
+    c-[nc] { color: #268bd2 } /* Name.Class */
+    c-[no] { color: #268bd2 } /* Name.Constant */
+    c-[nd] { color: #268bd2 } /* Name.Decorator */
+    c-[ni] { color: #268bd2 } /* Name.Entity */
+    c-[ne] { color: #268bd2 } /* Name.Exception */
+    c-[nf] { color: #268bd2 } /* Name.Function */
+    c-[nl] { color: #268bd2 } /* Name.Label */
+    c-[nn] { color: #268bd2 } /* Name.Namespace */
+    c-[py] { color: #268bd2 } /* Name.Property */
+    c-[ow] { color: #657b83 } /* Operator.Word */
+    c-[mb] { color: #657b83 } /* Literal.Number.Bin */
+    c-[mf] { color: #657b83 } /* Literal.Number.Float */
+    c-[mh] { color: #657b83 } /* Literal.Number.Hex */
+    c-[mi] { color: #657b83 } /* Literal.Number.Integer */
+    c-[mo] { color: #657b83 } /* Literal.Number.Oct */
+    c-[sa] { color: #6c71c4 } /* Literal.String.Affix */
+    c-[sb] { color: #6c71c4 } /* Literal.String.Backtick */
+    c-[sc] { color: #6c71c4 } /* Literal.String.Char */
+    c-[dl] { color: #6c71c4 } /* Literal.String.Delimiter */
+    c-[sd] { color: #6c71c4 } /* Literal.String.Doc */
+    c-[se] { color: #6c71c4 } /* Literal.String.Escape */
+    c-[sh] { color: #6c71c4 } /* Literal.String.Heredoc */
+    c-[si] { color: #6c71c4 } /* Literal.String.Interpol */
+    c-[sx] { color: #6c71c4 } /* Literal.String.Other */
+    c-[sr] { color: #6c71c4 } /* Literal.String.Regex */
+    c-[ss] { color: #6c71c4 } /* Literal.String.Symbol */
+    c-[fm] { color: #268bd2 } /* Name.Function.Magic */
+    c-[vc] { color: #cb4b16 } /* Name.Variable.Class */
+    c-[vg] { color: #cb4b16 } /* Name.Variable.Global */
+    c-[vi] { color: #cb4b16 } /* Name.Variable.Instance */
+    c-[vm] { color: #cb4b16 } /* Name.Variable.Magic */
+    c-[il] { color: #657b83 } /* Literal.Number.Integer.Long */
+}
+</style>
  <body class="h-entry">
   <div class="head">
-   <p data-fill-with="logo"></p>
+   <p data-fill-with="logo"><a class="logo" href="https://www.w3.org/"> <img alt="W3C" height="48" src="https://www.w3.org/StyleSheets/TR/2016/logos/W3C" width="72"> </a> </p>
    <h1 class="p-name no-ref" id="title">Largest Contentful Paint</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Editor’s Draft, <time class="dt-updated" datetime="2019-06-25">25 June 2019</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Draft Community Group Report, <time class="dt-updated" datetime="2020-11-26">26 November 2020</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -1482,12 +2067,13 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
      <dd><a href="https://github.com/web-platform-tests/wpt/tree/master/largest-contentful-paint">https://github.com/web-platform-tests/wpt/tree/master/largest-contentful-paint</a>
      <dt>Issue Tracking:
      <dd><a href="https://github.com/WICG/largest-contentful-paint/issues/">GitHub</a>
-     <dt class="editor">Editor:
+     <dt class="editor">Editors:
      <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:yoavweiss@chromium.org">Yoav Weiss</a> (<a class="p-org org" href="https://google.com">Google</a>)
+     <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:npm@chromium.org">Nicolás Peña Moreno</a> (<a class="p-org org" href="https://google.com">Google</a>)
     </dl>
    </div>
    <div data-fill-with="warning"></div>
-   <p class="copyright" data-fill-with="copyright"><a href="http://www.w3.org/Consortium/Legal/ipr-notice#Copyright">Copyright</a> © 2019 the Contributors to the Largest Contentful Paint Specification, published by the <a href="https://www.w3.org/community/wicg/">Web Platform Incubator Community Group</a> under the <a href="https://www.w3.org/community/about/agreements/cla/">W3C Community Contributor License Agreement (CLA)</a>.
+   <p class="copyright" data-fill-with="copyright"><a href="http://www.w3.org/Consortium/Legal/ipr-notice#Copyright">Copyright</a> © 2020 the Contributors to the Largest Contentful Paint Specification, published by the <a href="https://www.w3.org/community/wicg/">Web Platform Incubator Community Group</a> under the <a href="https://www.w3.org/community/about/agreements/cla/">W3C Community Contributor License Agreement (CLA)</a>.
 A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/">summary</a> is available. </p>
    <hr title="Separator for header">
   </div>
@@ -1514,16 +2100,30 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
      <a href="#sec-intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
      <ol class="toc">
       <li><a href="#sec-elements-exposed"><span class="secno">1.1</span> <span class="content">Elements exposed</span></a>
-      <li><a href="#sec-example"><span class="secno">1.2</span> <span class="content">Usage example</span></a>
+      <li><a href="#sec-largest-content"><span class="secno">1.2</span> <span class="content">Largest content</span></a>
+      <li><a href="#sec-example"><span class="secno">1.3</span> <span class="content">Usage example</span></a>
+      <li><a href="#limitations"><span class="secno">1.4</span> <span class="content">Limitations</span></a>
      </ol>
     <li>
-     <a href="#sec-largest-contentful-paint"><span class="secno">2</span> <span class="content">Largest Contenntful Paint</span></a>
+     <a href="#sec-largest-contentful-paint"><span class="secno">2</span> <span class="content">Largest Contentful Paint</span></a>
      <ol class="toc">
-      <li><a href="#sec-performance-largest-contentful-paint-candidate"><span class="secno">2.1</span> <span class="content"><code class="idl"><span>PerformanceLargestContentfulPaintCandidate</span></code> interface</span></a>
+      <li><a href="#sec-largest-contentful-paint-interface"><span class="secno">2.1</span> <span class="content"><code class="idl"><span>LargestContentfulPaint</span></code> interface</span></a>
      </ol>
-    <li><a href="#sec-processing-model"><span class="secno">3</span> <span class="content">Processing model</span></a>
+    <li>
+     <a href="#sec-processing-model"><span class="secno">3</span> <span class="content">Processing model</span></a>
+     <ol class="toc">
+      <li><a href="#sec-add-lcp-entry"><span class="secno">3.1</span> <span class="content">Potentially add LargestContentfulPaint entry</span></a>
+      <li><a href="#sec-create-entry"><span class="secno">3.2</span> <span class="content">Create a LargestContentfulPaint entry</span></a>
+      <li><a href="#sec-modifications-DOM"><span class="secno">3.3</span> <span class="content">Modifications to the DOM specification</span></a>
+      <li><a href="#sec-modifications-HTML"><span class="secno">3.4</span> <span class="content">Modifications to the HTML specification</span></a>
+     </ol>
     <li><a href="#sec-security"><span class="secno">4</span> <span class="content">Security &amp; privacy considerations</span></a>
-    <li><a href="#conformance"><span class="secno"></span> <span class="content"> Conformance</span></a>
+    <li>
+     <a href="#w3c-conformance"><span class="secno"></span> <span class="content">Conformance</span></a>
+     <ol class="toc">
+      <li><a href="#w3c-conventions"><span class="secno"></span> <span class="content">Document conventions</span></a>
+      <li><a href="#w3c-conformant-algorithms"><span class="secno"></span> <span class="content">Conformant Algorithms</span></a>
+     </ol>
     <li>
      <a href="#index"><span class="secno"></span> <span class="content">Index</span></a>
      <ol class="toc">
@@ -1534,7 +2134,6 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
       <li><a href="#normative"><span class="secno"></span> <span class="content">Normative References</span></a>
-      <li><a href="#informative"><span class="secno"></span> <span class="content">Informative References</span></a>
      </ol>
     <li><a href="#idl-index"><span class="secno"></span> <span class="content">IDL Index</span></a>
    </ol>
@@ -1542,7 +2141,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
   <main>
    <h2 class="heading settled" data-level="1" id="sec-intro"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#sec-intro"></a></h2>
    <p><em>This section is non-normative.</em> The LargestContentfulPaint API enables developers to gain visibility into the loading and rendering process of the web pages, in order for them to be able to optimize it.</p>
-   <p>Developers today don’t have a reliable metric that correlated with their user’s visual rendering experience. Existing metrics such as First Paint and First Contentful Paint focus on initial rendering, but don’t take into account the importance of the painted content, and therefore may indicate times in which the user still does not consider the page useful.</p>
+   <p>Developers today don’t have a reliable metric that correlates with their user’s visual rendering experience. Existing metrics such as First Paint and First Contentful Paint focus on initial rendering, but don’t take into account the importance of the painted content, and therefore may indicate times in which the user still does not consider the page useful.</p>
    <p>Largest Contentful Paint (LCP) aims to be a new page-load metric that:</p>
    <ul>
     <li data-md>
@@ -1555,8 +2154,10 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
    <p>The largest paint during the loading process of the page is likely to signify a meaningful event from the user’s perspective, and is therefore something we want to expose by default to developers, enabling performance teams, analytics providers and lab-based measurement tools to collect those metrics without requiring extra annotation work by the folks creating the content itself.</p>
    <p>The API relies heavily on <a data-link-type="biblio" href="#biblio-element-timing">[ELEMENT-TIMING]</a>, which can be thought of as the low-level primitive that this high-level feature is built on top of. For cases where the content creators are willing to annotate their content and indicate the important points in the page’s loading cycle, Element Timing is the API that will provide them more control over the elements that get reported.</p>
    <h3 class="heading settled" data-level="1.1" id="sec-elements-exposed"><span class="secno">1.1. </span><span class="content">Elements exposed</span><a class="self-link" href="#sec-elements-exposed"></a></h3>
-   <p>The Largest Contentful Paint API will only expose element types that are already <a data-link-type="dfn" href="https://wicg.github.io/element-timing/#sec-elements-exposed" id="ref-for-sec-elements-exposed">exposed</a> by the Element Timing API.</p>
-   <h3 class="heading settled" data-level="1.2" id="sec-example"><span class="secno">1.2. </span><span class="content">Usage example</span><a class="self-link" href="#sec-example"></a></h3>
+   <p>The Largest Contentful Paint API will only expose element types that are already <a data-link-type="dfn" href="https://wicg.github.io/element-timing/#sec-elements-exposed" id="ref-for-sec-elements-exposed">exposed</a> by the Element Timing API. In this case, there is no need to annotate them with the <code class="highlight">elementtiming</code> attribute.</p>
+   <h3 class="heading settled" data-level="1.2" id="sec-largest-content"><span class="secno">1.2. </span><span class="content">Largest content</span><a class="self-link" href="#sec-largest-content"></a></h3>
+   <p>The algorithm used for this API keeps track of the content seen so far. Whenever a new largest content is found, a new entry is created for it. Content that is removed is still considered by the algorithm. In particular, if the content removed was the largest, then a new entry is created only if larger content is ever added. The algorithm terminates whenever scroll or input events occur, since those are likely to introduce new content into the website.</p>
+   <h3 class="heading settled" data-level="1.3" id="sec-example"><span class="secno">1.3. </span><span class="content">Usage example</span><a class="self-link" href="#sec-example"></a></h3>
    <p>The following example shows an image and a large body of text. The developer then registers an observer that gets candidate entries for the largest paint while the page is loading.</p>
 <pre class="example highlight" id="example-85968f20"><a class="self-link" href="#example-85968f20"></a><c- p>&lt;</c-><c- f>img</c-> <c- e>src</c-><c- o>=</c-><c- s>"large_image.jpg"</c-><c- p>></c->
 <c- p>&lt;</c-><c- f>p</c-> <c- e>id</c-><c- o>=</c-><c- s>'large-paragraph'</c-><c- p>></c->This is large body of text.<c- p>&lt;/</c-><c- f>p</c-><c- p>></c->
@@ -1570,25 +2171,36 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
 observer<c- p>.</c->observe<c- p>({</c->entryTypes<c- o>:</c-> <c- p>[</c-><c- t>'largest-contentful-paint'</c-><c- p>]});</c->
 <c- p>&lt;/</c-><c- f>script</c-><c- p>></c->
 </pre>
-   <h2 class="heading settled" data-level="2" id="sec-largest-contentful-paint"><span class="secno">2. </span><span class="content">Largest Contenntful Paint</span><a class="self-link" href="#sec-largest-contentful-paint"></a></h2>
-   <p>Largest Contentful Paint involves the following new interface:</p>
-   <h3 class="heading settled" data-level="2.1" id="sec-performance-largest-contentful-paint-candidate"><span class="secno">2.1. </span><span class="content"><code class="idl"><a data-link-type="idl" href="#performancelargestcontentfulpaintcandidate" id="ref-for-performancelargestcontentfulpaintcandidate">PerformanceLargestContentfulPaintCandidate</a></code> interface</span><a class="self-link" href="#sec-performance-largest-contentful-paint-candidate"></a></h3>
-<pre class="idl highlight def"><c- b>interface</c-> <dfn class="dfn-paneled idl-code" data-dfn-type="interface" data-export id="performancelargestcontentfulpaintcandidate"><code class="highlight"><c- g>PerformanceLargestContentfulPaintCandidate</c-></code></dfn> : <a class="n" data-link-type="idl-name" href="https://w3c.github.io/performance-timeline/#the-performanceentry-interface" id="ref-for-the-performanceentry-interface"><c- n>PerformanceEntry</c-></a> {
-    <c- b>readonly</c-> <c- b>attribute</c-> <a class="idl-code" data-link-type="interface" href="https://heycam.github.io/webidl/#idl-unsigned-long" id="ref-for-idl-unsigned-long"><c- b>unsigned</c-> <c- b>long</c-></a> <dfn class="dfn-paneled idl-code" data-dfn-for="PerformanceLargestContentfulPaintCandidate" data-dfn-type="attribute" data-export data-readonly data-type="unsigned long" id="dom-performancelargestcontentfulpaintcandidate-size"><code class="highlight"><c- g>size</c-></code></dfn>;
-    <c- b>readonly</c-> <c- b>attribute</c-> <a class="n" data-link-type="idl-name" href="https://w3c.github.io/hr-time#dom-domhighrestimestamp" id="ref-for-dom-domhighrestimestamp"><c- n>DOMHighResTimeStamp</c-></a> <dfn class="dfn-paneled idl-code" data-dfn-for="PerformanceLargestContentfulPaintCandidate" data-dfn-type="attribute" data-export data-readonly data-type="DOMHighResTimeStamp" id="dom-performancelargestcontentfulpaintcandidate-responseend"><code class="highlight"><c- g>responseEnd</c-></code></dfn>;
-    <c- b>readonly</c-> <c- b>attribute</c-> <a class="idl-code" data-link-type="interface" href="https://heycam.github.io/webidl/#idl-DOMString" id="ref-for-idl-DOMString"><c- b>DOMString</c-></a> <dfn class="dfn-paneled idl-code" data-dfn-for="PerformanceLargestContentfulPaintCandidate" data-dfn-type="attribute" data-export data-readonly data-type="DOMString" id="dom-performancelargestcontentfulpaintcandidate-id"><code class="highlight"><c- g>id</c-></code></dfn>;
-    <c- b>readonly</c-> <c- b>attribute</c-> <a class="idl-code" data-link-type="interface" href="https://heycam.github.io/webidl/#idl-DOMString" id="ref-for-idl-DOMString①"><c- b>DOMString</c-></a> <dfn class="dfn-paneled idl-code" data-dfn-for="PerformanceLargestContentfulPaintCandidate" data-dfn-type="attribute" data-export data-readonly data-type="DOMString" id="dom-performancelargestcontentfulpaintcandidate-url"><code class="highlight"><c- g>url</c-></code></dfn>;
-    <c- b>readonly</c-> <c- b>attribute</c-> <a class="n" data-link-type="idl-name" href="https://dom.spec.whatwg.org/#element" id="ref-for-element"><c- n>Element</c-></a>? <dfn class="dfn-paneled idl-code" data-dfn-for="PerformanceLargestContentfulPaintCandidate" data-dfn-type="attribute" data-export data-readonly data-type="Element?" id="dom-performancelargestcontentfulpaintcandidate-element"><code class="highlight"><c- g>element</c-></code></dfn>;
-};
-</pre>
-   <p>Each <code class="idl"><a data-link-type="idl" href="#performancelargestcontentfulpaintcandidate" id="ref-for-performancelargestcontentfulpaintcandidate①">PerformanceLargestContentfulPaintCandidate</a></code> object has these associated concepts:</p>
+   <h3 class="heading settled" data-level="1.4" id="limitations"><span class="secno">1.4. </span><span class="content">Limitations</span><a class="self-link" href="#limitations"></a></h3>
+   <p>The LargestContentfulPaint API is based on heuristics. As such, it is error prone. It has the following problems:</p>
    <ul>
     <li data-md>
-     <p>A <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="starttime">startTime</dfn>, initially set to 0.</p>
+     <p>The algorithm halts when it detects certain types of user inputs. However, this means that the algorithm will not capture the main content if the user input occurs before the main content is displayed. In fact, the algorithm may produce meaningless results or no results at all if user input occurs very early.</p>
+    <li data-md>
+     <p>To account for image carousels, content is still considered as the largest even if it’s removed. This presents problems for websites with splash screens that use large content as placeholders.</p>
+   </ul>
+   <h2 class="heading settled" data-level="2" id="sec-largest-contentful-paint"><span class="secno">2. </span><span class="content">Largest Contentful Paint</span><a class="self-link" href="#sec-largest-contentful-paint"></a></h2>
+   <p>Largest Contentful Paint involves the following new interface:</p>
+   <h3 class="heading settled" data-level="2.1" id="sec-largest-contentful-paint-interface"><span class="secno">2.1. </span><span class="content"><code class="idl"><a data-link-type="idl" href="#largestcontentfulpaint" id="ref-for-largestcontentfulpaint">LargestContentfulPaint</a></code> interface</span><a class="self-link" href="#sec-largest-contentful-paint-interface"></a></h3>
+<pre class="idl highlight def">[<a class="idl-code" data-link-type="extended-attribute" href="https://heycam.github.io/webidl/#Exposed" id="ref-for-Exposed"><c- g>Exposed</c-></a>=<c- n>Window</c->]
+<c- b>interface</c-> <dfn class="dfn-paneled idl-code" data-dfn-type="interface" data-export id="largestcontentfulpaint"><code class="highlight"><c- g>LargestContentfulPaint</c-></code></dfn> : <a data-link-type="idl-name" href="https://w3c.github.io/performance-timeline/#the-performanceentry-interface" id="ref-for-the-performanceentry-interface"><c- n>PerformanceEntry</c-></a> {
+    <c- b>readonly</c-> <c- b>attribute</c-> <a data-link-type="idl-name" href="https://w3c.github.io/hr-time#dom-domhighrestimestamp" id="ref-for-dom-domhighrestimestamp"><c- n>DOMHighResTimeStamp</c-></a> <dfn class="dfn-paneled idl-code" data-dfn-for="LargestContentfulPaint" data-dfn-type="attribute" data-export data-readonly data-type="DOMHighResTimeStamp" id="dom-largestcontentfulpaint-rendertime"><code class="highlight"><c- g>renderTime</c-></code></dfn>;
+    <c- b>readonly</c-> <c- b>attribute</c-> <a data-link-type="idl-name" href="https://w3c.github.io/hr-time#dom-domhighrestimestamp" id="ref-for-dom-domhighrestimestamp①"><c- n>DOMHighResTimeStamp</c-></a> <dfn class="dfn-paneled idl-code" data-dfn-for="LargestContentfulPaint" data-dfn-type="attribute" data-export data-readonly data-type="DOMHighResTimeStamp" id="dom-largestcontentfulpaint-loadtime"><code class="highlight"><c- g>loadTime</c-></code></dfn>;
+    <c- b>readonly</c-> <c- b>attribute</c-> <a class="idl-code" data-link-type="interface" href="https://heycam.github.io/webidl/#idl-unsigned-long" id="ref-for-idl-unsigned-long"><c- b>unsigned</c-> <c- b>long</c-></a> <dfn class="dfn-paneled idl-code" data-dfn-for="LargestContentfulPaint" data-dfn-type="attribute" data-export data-readonly data-type="unsigned long" id="dom-largestcontentfulpaint-size"><code class="highlight"><c- g>size</c-></code></dfn>;
+    <c- b>readonly</c-> <c- b>attribute</c-> <a class="idl-code" data-link-type="interface" href="https://heycam.github.io/webidl/#idl-DOMString" id="ref-for-idl-DOMString"><c- b>DOMString</c-></a> <dfn class="dfn-paneled idl-code" data-dfn-for="LargestContentfulPaint" data-dfn-type="attribute" data-export data-readonly data-type="DOMString" id="dom-largestcontentfulpaint-id"><code class="highlight"><c- g>id</c-></code></dfn>;
+    <c- b>readonly</c-> <c- b>attribute</c-> <a class="idl-code" data-link-type="interface" href="https://heycam.github.io/webidl/#idl-DOMString" id="ref-for-idl-DOMString①"><c- b>DOMString</c-></a> <dfn class="dfn-paneled idl-code" data-dfn-for="LargestContentfulPaint" data-dfn-type="attribute" data-export data-readonly data-type="DOMString" id="dom-largestcontentfulpaint-url"><code class="highlight"><c- g>url</c-></code></dfn>;
+    <c- b>readonly</c-> <c- b>attribute</c-> <a data-link-type="idl-name" href="https://dom.spec.whatwg.org/#element" id="ref-for-element"><c- n>Element</c-></a>? <dfn class="dfn-paneled idl-code" data-dfn-for="LargestContentfulPaint" data-dfn-type="attribute" data-export data-readonly data-type="Element?" id="dom-largestcontentfulpaint-element"><code class="highlight"><c- g>element</c-></code></dfn>;
+    [<a class="idl-code" data-link-type="extended-attribute" href="https://heycam.github.io/webidl/#Default" id="ref-for-Default"><c- g>Default</c-></a>] <a class="idl-code" data-link-type="interface" href="https://heycam.github.io/webidl/#idl-object" id="ref-for-idl-object"><c- b>object</c-></a> <dfn class="idl-code" data-dfn-for="LargestContentfulPaint" data-dfn-type="method" data-export data-lt="toJSON()" id="dom-largestcontentfulpaint-tojson"><code class="highlight"><c- g>toJSON</c-></code><a class="self-link" href="#dom-largestcontentfulpaint-tojson"></a></dfn>();
+};
+</pre>
+   <p>Each <code class="idl"><a data-link-type="idl" href="#largestcontentfulpaint" id="ref-for-largestcontentfulpaint①">LargestContentfulPaint</a></code> object has these associated concepts:</p>
+   <ul>
+    <li data-md>
+     <p>A <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="rendertime">renderTime</dfn>, initially set to 0.</p>
     <li data-md>
      <p>A <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="size">size</dfn>, initially set to 0.</p>
     <li data-md>
-     <p>A <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="responseend">responseEnd</dfn>, initially set to 0.</p>
+     <p>A <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="loadtime">loadTime</dfn>, initially set to 0.</p>
     <li data-md>
      <p>An <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="id">id</dfn>, initially set to the empty string.</p>
     <li data-md>
@@ -1596,32 +2208,38 @@ observer<c- p>.</c->observe<c- p>({</c->entryTypes<c- o>:</c-> <c- p>[</c-><c- t
     <li data-md>
      <p>An <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="element">element</dfn> containing the associated <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#element" id="ref-for-element①">Element</a></code>, initially set to <code class="highlight"><c- kc>null</c-></code>.</p>
    </ul>
-   <p>The <code class="idl"><a data-link-type="idl" href="https://w3c.github.io/performance-timeline/#dom-performanceentry-entrytype" id="ref-for-dom-performanceentry-entrytype">entryType</a></code> attribute’s getter must return the <code class="idl"><a data-link-type="idl" href="https://heycam.github.io/webidl/#idl-DOMString" id="ref-for-idl-DOMString②">DOMString</a></code> <code class="highlight"><c- u>"largest-contentful-paint-candidate"</c-></code>.</p>
-   <p>The <code class="idl"><a data-link-type="idl" href="https://w3c.github.io/performance-timeline/#dom-performanceentry-name" id="ref-for-dom-performanceentry-name">name</a></code> attribute’s getter must return the value it was initialized to.</p>
-   <p>The <code class="idl"><a data-link-type="idl" href="https://w3c.github.io/performance-timeline/#dom-performanceentry-starttime" id="ref-for-dom-performanceentry-starttime">startTime</a></code> attribute must return the value of the <a data-link-type="dfn" href="https://dom.spec.whatwg.org/#context-object" id="ref-for-context-object">context object</a>’s <a data-link-type="dfn" href="#starttime" id="ref-for-starttime">startTime</a>.</p>
+   <p>The <code class="idl"><a data-link-type="idl" href="https://w3c.github.io/performance-timeline/#dom-performanceentry-entrytype" id="ref-for-dom-performanceentry-entrytype">entryType</a></code> attribute’s getter must return the <code class="idl"><a data-link-type="idl" href="https://heycam.github.io/webidl/#idl-DOMString" id="ref-for-idl-DOMString②">DOMString</a></code> <code class="highlight"><c- u>"largest-contentful-paint"</c-></code>.</p>
+   <p>The <code class="idl"><a data-link-type="idl" href="https://w3c.github.io/performance-timeline/#dom-performanceentry-name" id="ref-for-dom-performanceentry-name">name</a></code> attribute’s getter must return the empty string.</p>
+   <p>The <code class="idl"><a data-link-type="idl" href="https://w3c.github.io/performance-timeline/#dom-performanceentry-starttime" id="ref-for-dom-performanceentry-starttime">startTime</a></code> attribute’s getter must return the value of the <a data-link-type="dfn" href="https://dom.spec.whatwg.org/#context-object" id="ref-for-context-object">context object</a>’s <a data-link-type="dfn" href="#rendertime" id="ref-for-rendertime">renderTime</a> if it is not 0, and the value of the <a data-link-type="dfn" href="https://dom.spec.whatwg.org/#context-object" id="ref-for-context-object①">context object</a>’s <a data-link-type="dfn" href="#loadtime" id="ref-for-loadtime">loadTime</a> otherwise.</p>
    <p>The <code class="idl"><a data-link-type="idl" href="https://w3c.github.io/performance-timeline/#dom-performanceentry-duration" id="ref-for-dom-performanceentry-duration">duration</a></code> attribute’s getter must return 0.</p>
-   <p>The <code class="idl"><a data-link-type="idl" href="#dom-performancelargestcontentfulpaintcandidate-size" id="ref-for-dom-performancelargestcontentfulpaintcandidate-size">size</a></code> attribute must return the value of the <a data-link-type="dfn" href="https://dom.spec.whatwg.org/#context-object" id="ref-for-context-object①">context object</a>’s <a data-link-type="dfn" href="#size" id="ref-for-size">size</a>.</p>
-   <p>The <code class="idl"><a data-link-type="idl" href="#dom-performancelargestcontentfulpaintcandidate-responseend" id="ref-for-dom-performancelargestcontentfulpaintcandidate-responseend">responseEnd</a></code> attribute must return the value of the <a data-link-type="dfn" href="https://dom.spec.whatwg.org/#context-object" id="ref-for-context-object②">context object</a>’s <a data-link-type="dfn" href="#responseend" id="ref-for-responseend">responseEnd</a>.</p>
-   <p>The <code class="idl"><a data-link-type="idl" href="#dom-performancelargestcontentfulpaintcandidate-id" id="ref-for-dom-performancelargestcontentfulpaintcandidate-id">id</a></code> attribute must return the value of the <a data-link-type="dfn" href="https://dom.spec.whatwg.org/#context-object" id="ref-for-context-object③">context object</a>’s <a data-link-type="dfn" href="#id" id="ref-for-id">id</a>.</p>
-   <p>The <code class="idl"><a data-link-type="idl" href="#dom-performancelargestcontentfulpaintcandidate-url" id="ref-for-dom-performancelargestcontentfulpaintcandidate-url">url</a></code> attribute must return the value of the <a data-link-type="dfn" href="https://dom.spec.whatwg.org/#context-object" id="ref-for-context-object④">context object</a>’s <a data-link-type="dfn" href="#url" id="ref-for-url">url</a>.</p>
-   <p>The <code class="idl"><a data-link-type="idl" href="#dom-performancelargestcontentfulpaintcandidate-element" id="ref-for-dom-performancelargestcontentfulpaintcandidate-element">element</a></code> attribute’s getter must return the value returned by running the <a data-link-type="dfn" href="https://wicg.github.io/element-timing/#get-an-element" id="ref-for-get-an-element">get an element</a> algorithm with <a data-link-type="dfn" href="#element" id="ref-for-element②">element</a> and null as inputs.</p>
-   <p class="note" role="note"><span>Note:</span> The above algorithm defines that an element that is no longer <a data-link-type="dfn" href="https://dom.spec.whatwg.org/#concept-tree-descendant" id="ref-for-concept-tree-descendant">descendant</a> of the <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#document" id="ref-for-document">Document</a></code> will no longer be returned by <code class="idl"><a data-link-type="idl" href="#dom-performancelargestcontentfulpaintcandidate-element" id="ref-for-dom-performancelargestcontentfulpaintcandidate-element①">element</a></code>'s attribute getter, including elements that are inside a shadow DOM.</p>
-   <p>This specification also extends <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#document" id="ref-for-document①">Document</a></code> by adding it a <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="largestcontentfulpaintsize">largestContentfulPaintSize</dfn> concept, initially set to 0.</p>
+   <p>The <code class="idl"><a data-link-type="idl" href="#dom-largestcontentfulpaint-rendertime" id="ref-for-dom-largestcontentfulpaint-rendertime">renderTime</a></code> attribute must return the value of the <a data-link-type="dfn" href="https://dom.spec.whatwg.org/#context-object" id="ref-for-context-object②">context object</a>’s <a data-link-type="dfn" href="#rendertime" id="ref-for-rendertime①">renderTime</a>.</p>
+   <p>The <code class="idl"><a data-link-type="idl" href="#dom-largestcontentfulpaint-loadtime" id="ref-for-dom-largestcontentfulpaint-loadtime">loadTime</a></code> attribute must return the value of the <a data-link-type="dfn" href="https://dom.spec.whatwg.org/#context-object" id="ref-for-context-object③">context object</a>’s <a data-link-type="dfn" href="#loadtime" id="ref-for-loadtime①">loadTime</a>.</p>
+   <p>The <code class="idl"><a data-link-type="idl" href="#dom-largestcontentfulpaint-size" id="ref-for-dom-largestcontentfulpaint-size">size</a></code> attribute must return the value of the <a data-link-type="dfn" href="https://dom.spec.whatwg.org/#context-object" id="ref-for-context-object④">context object</a>’s <a data-link-type="dfn" href="#size" id="ref-for-size">size</a>.</p>
+   <p>The <code class="idl"><a data-link-type="idl" href="#dom-largestcontentfulpaint-id" id="ref-for-dom-largestcontentfulpaint-id">id</a></code> attribute must return the value of the <a data-link-type="dfn" href="https://dom.spec.whatwg.org/#context-object" id="ref-for-context-object⑤">context object</a>’s <a data-link-type="dfn" href="#id" id="ref-for-id">id</a>.</p>
+   <p>The <code class="idl"><a data-link-type="idl" href="#dom-largestcontentfulpaint-url" id="ref-for-dom-largestcontentfulpaint-url">url</a></code> attribute must return the value of the <a data-link-type="dfn" href="https://dom.spec.whatwg.org/#context-object" id="ref-for-context-object⑥">context object</a>’s <a data-link-type="dfn" href="#url" id="ref-for-url">url</a>.</p>
+   <p>The <code class="idl"><a data-link-type="idl" href="#dom-largestcontentfulpaint-element" id="ref-for-dom-largestcontentfulpaint-element">element</a></code> attribute’s getter must return the value returned by running the <a data-link-type="dfn" href="https://wicg.github.io/element-timing/#get-an-element" id="ref-for-get-an-element">get an element</a> algorithm with <a data-link-type="dfn" href="#element" id="ref-for-element②">element</a> and null as inputs.</p>
+   <p class="note" role="note"><span>Note:</span> The above algorithm defines that an element that is no longer <a data-link-type="dfn" href="https://dom.spec.whatwg.org/#concept-tree-descendant" id="ref-for-concept-tree-descendant">descendant</a> of the <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#document" id="ref-for-document">Document</a></code> will no longer be returned by <code class="idl"><a data-link-type="idl" href="#dom-largestcontentfulpaint-element" id="ref-for-dom-largestcontentfulpaint-element①">element</a></code>'s attribute getter, including elements that are inside a shadow DOM.</p>
+   <p>This specification also extends <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#document" id="ref-for-document①">Document</a></code> by adding to it a <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="largest-contentful-paint-size">largest contentful paint size</dfn> concept, initially set to 0.
+It also adds an associated <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="content-set">content set</dfn>, which is initially an empty <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#ordered-set" id="ref-for-ordered-set">set</a>. The <a data-link-type="dfn" href="#content-set" id="ref-for-content-set">content set</a> will be filled with <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#pair" id="ref-for-pair">pairs</a> with an <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#element" id="ref-for-element③">Element</a></code> as the first item and a <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#request" id="ref-for-request">Request</a></code> as the second item. This is used for performance, to enable the algorithm to only consider each content once.</p>
+   <p class="note" role="note"><span>Note:</span> The user agent needs to maintain the <a data-link-type="dfn" href="#content-set" id="ref-for-content-set①">content set</a> so that removed content does not introduce memory leaks. In particular, it can tie the lifetime of the <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#pair" id="ref-for-pair①">pairs</a> to weak pointers to the <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#element" id="ref-for-element④">Elements</a></code> so that it can be cleaned up sometime after the <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#element" id="ref-for-element⑤">Elements</a></code> are removed. Since the <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#ordered-set" id="ref-for-ordered-set①">set</a> is not exposed to web developers, this does not expose garbage collection timing.</p>
    <h2 class="heading settled" data-level="3" id="sec-processing-model"><span class="secno">3. </span><span class="content">Processing model</span><a class="self-link" href="#sec-processing-model"></a></h2>
+   <h3 class="heading settled" data-level="3.1" id="sec-add-lcp-entry"><span class="secno">3.1. </span><span class="content">Potentially add LargestContentfulPaint entry</span><a class="self-link" href="#sec-add-lcp-entry"></a></h3>
    <p class="note" role="note"><span>Note:</span> A user agent implementing the Largest Contentful Paint API would need to include <code class="highlight"><c- u>"largest-contentful-paint"</c-></code> in <code class="idl"><a data-link-type="idl" href="https://w3c.github.io/performance-timeline/#supportedentrytypes-attribute" id="ref-for-supportedentrytypes-attribute">supportedEntryTypes</a></code> for <code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/window-object.html#window" id="ref-for-window">Window</a></code> contexts.
 This allows developers to detect support for the API.</p>
-   <p>In order to <dfn data-dfn-type="dfn" data-export id="potentially-add-a-performancelargestcontentfulpaintcandidate-entry">potentially add a <code class="idl"><a data-link-type="idl" href="#performancelargestcontentfulpaintcandidate" id="ref-for-performancelargestcontentfulpaintcandidate②">PerformanceLargestContentfulPaintCandidate</a></code> entry<a class="self-link" href="#potentially-add-a-performancelargestcontentfulpaintcandidate-entry"></a></dfn>, the user agent must run the following steps:</p>
-   <div class="algorithm" data-algorithm="PerformanceLargestContentfulPaintCandidate add-image-entry">
+   <p>In order to <dfn data-dfn-type="dfn" data-export id="potentially-add-a-largestcontentfulpaint-entry">potentially add a <code class="idl"><a data-link-type="idl" href="#largestcontentfulpaint" id="ref-for-largestcontentfulpaint②">LargestContentfulPaint</a></code> entry<a class="self-link" href="#potentially-add-a-largestcontentfulpaint-entry"></a></dfn>, the user agent must run the following steps:</p>
+   <div class="algorithm" data-algorithm="LargestContentfulPaint potentially-add-entry">
     <dl>
      <dt data-md>Input
      <dd data-md>
       <p><var>intersectionRect</var>, a <code class="idl"><a data-link-type="idl" href="https://drafts.fxtf.org/geometry-1/#domrectreadonly" id="ref-for-domrectreadonly">DOMRectReadOnly</a></code></p>
      <dd data-md>
-      <p><var>request</var>, a <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#request" id="ref-for-request">Request</a></code></p>
+      <p><var>imageRequest</var>, a <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#request" id="ref-for-request①">Request</a></code></p>
      <dd data-md>
-      <p><var>time</var>, a DOMHighResTimestamp</p>
+      <p><var>renderTime</var>, a DOMHighResTimestamp</p>
      <dd data-md>
-      <p><var>element</var>, an <a data-link-type="dfn" href="#element" id="ref-for-element③">Element</a></p>
+      <p><var>loadTime</var>, a DOMHighResTimestamp</p>
+     <dd data-md>
+      <p><var>element</var>, an <a data-link-type="dfn" href="#element" id="ref-for-element⑥">Element</a></p>
      <dd data-md>
       <p><var>document</var>, a <a data-link-type="dfn" href="https://dom.spec.whatwg.org#concept-document" id="ref-for-concept-document">Document</a></p>
      <dt data-md>Output
@@ -1629,252 +2247,252 @@ This allows developers to detect support for the API.</p>
       <p>None</p>
       <ol>
        <li data-md>
-        <p>Let <var>largest</var> be <var>document</var>’s <a data-link-type="dfn" href="#largestcontentfulpaintsize" id="ref-for-largestcontentfulpaintsize">largestContentfulPaintSize</a>.</p>
+        <p>Let <var>contentIdentifier</var> be the <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#pair" id="ref-for-pair②">pair</a> (<var>element</var>, <var>imageRequest</var>).</p>
        <li data-md>
-        <p>Let <var>url</var> be <var>request</var>’s {=URL=}.</p>
+        <p>If <var>document</var>’s <a data-link-type="dfn" href="#content-set" id="ref-for-content-set②">content set</a> <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#list-contain" id="ref-for-list-contain">contains</a> <var>contentIdentifier</var>, return.</p>
+       <li data-md>
+        <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#set-append" id="ref-for-set-append">Append</a> <var>contentIdentifier</var> to <var>document</var>’s <a data-link-type="dfn" href="#content-set" id="ref-for-content-set③">content set</a></p>
+       <li data-md>
+        <p>Let <var>window</var> be <var>document</var>’s <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-relevant-global" id="ref-for-concept-relevant-global">relevant global object</a>.</p>
+       <li data-md>
+        <p>If either of <var>window</var>’s <a data-link-type="dfn" href="#has-dispatched-scroll-event" id="ref-for-has-dispatched-scroll-event">has dispatched scroll event</a> or <a data-link-type="dfn" href="https://wicg.github.io/event-timing#has-dispatched-input-event" id="ref-for-has-dispatched-input-event">has dispatched input event</a> is true, return.</p>
+       <li data-md>
+        <p>Let <var>url</var> be the empty string.</p>
+       <li data-md>
+        <p>If <var>imageRequest</var> is not null, set <var>url</var> to be <var>imageRequest</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#dom-request-url" id="ref-for-dom-request-url">request URL</a>.</p>
        <li data-md>
         <p>Let <var>id</var> be <var>element</var>’s <a class="idl-code" data-link-type="attribute" href="https://dom.spec.whatwg.org#dom-element-id" id="ref-for-dom-element-id">element id</a>.</p>
-       <li data-md>
-        <p>Let <var>responseEnd</var> be the result of running <a data-link-type="dfn" href="https://wicg.github.io/element-timing/#get-response-end-time" id="ref-for-get-response-end-time">get response end time</a> with <var>request</var> as input.</p>
        <li data-md>
         <p>Let <var>width</var> be <var>intersectionRect</var>’s <code class="idl"><a data-link-type="idl" href="https://drafts.fxtf.org/geometry-1/#dom-domrectreadonly-width" id="ref-for-dom-domrectreadonly-width">width</a></code>.</p>
        <li data-md>
         <p>Let <var>height</var> be <var>intersectionRect</var>’s <code class="idl"><a data-link-type="idl" href="https://drafts.fxtf.org/geometry-1/#dom-domrectreadonly-height" id="ref-for-dom-domrectreadonly-height">height</a></code>.</p>
        <li data-md>
-        <p>Let <var>size</var> be <var>width</var>*<var>height</var>.</p>
+        <p>Let <var>size</var> be <code class="highlight"><var>width</var> <c- o>*</c-> <var>height</var></code>.</p>
        <li data-md>
-        <p>If <var>size</var> is smaller or equals <var>largest</var>, return.</p>
+        <p>If <var>imageRequest</var> is not null, run the following steps:</p>
+        <ol>
+         <li data-md>
+          <p>Let <var>naturalWidth</var> and <var>naturalHeight</var> be the outputs of running the same steps for an <code class="highlight"><a data-link-type="element" href="https://html.spec.whatwg.org/multipage/embedded-content.html#the-img-element" id="ref-for-the-img-element">img</a></code>'s <code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/webappapis.html#dom-img-naturalwidth" id="ref-for-dom-img-naturalwidth">naturalWidth</a></code> and <code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/webappapis.html#dom-img-naturalheight" id="ref-for-dom-img-naturalheight">naturalHeight</a></code> attribute getters, but using <var>imageRequest</var> as the image.</p>
+         <li data-md>
+          <p>Let <var>naturalSize</var> be <code class="highlight"><var>naturalWidth</var> <c- o>*</c-> <var>naturalHeight</var></code>.</p>
+         <li data-md>
+          <p>Let <var>displayWidth</var> and <var>displayHeight</var> be the outputs of running the same steps for an <code class="highlight"><a data-link-type="element" href="https://html.spec.whatwg.org/multipage/embedded-content.html#the-img-element" id="ref-for-the-img-element①">img</a></code>'s <code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/webappapis.html#dom-img-width" id="ref-for-dom-img-width">width</a></code> and <code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/webappapis.html#dom-img-height" id="ref-for-dom-img-height">height</a></code> attribute getters, but using <var>imageRequest</var> as the image.</p>
+         <li data-md>
+          <p>Let <var>displaySize</var> be <code class="highlight"><var>displayWidth</var> <c- o>*</c-> <var>displayHeight</var></code>.</p>
+         <li data-md>
+          <p>Let <var>penaltyFactor</var> be <code class="highlight">min<c- p>(</c-><var>displaySize</var><c- p>,</c-> <var>naturalSize</var><c- p>)</c-> <c- o>/</c-> <var>displaySize</var></code>.</p>
+         <li data-md>
+          <p>Multiply <var>size</var> by <var>penaltyFactor</var>.</p>
+        </ol>
        <li data-md>
-        <p>Set <var>document</var>’s <a data-link-type="dfn" href="#largestcontentfulpaintsize" id="ref-for-largestcontentfulpaintsize①">largestContentfulPaintSize</a> to <var>size</var>.</p>
+        <p>If <var>size</var> is less than or equal to <var>document</var>’s <a data-link-type="dfn" href="#largest-contentful-paint-size" id="ref-for-largest-contentful-paint-size">largest contentful paint size</a>, return.</p>
        <li data-md>
-        <p>Let <var>entry</var> be a new <code class="idl"><a data-link-type="idl" href="#performancelargestcontentfulpaintcandidate" id="ref-for-performancelargestcontentfulpaintcandidate③">PerformanceLargestContentfulPaintCandidate</a></code> entry, with it’s <code class="idl"><a data-link-type="idl" href="#dom-performancelargestcontentfulpaintcandidate-size" id="ref-for-dom-performancelargestcontentfulpaintcandidate-size①">size</a></code> set to <var>size</var>, <code class="idl"><a data-link-type="idl" href="#dom-performancelargestcontentfulpaintcandidate-url" id="ref-for-dom-performancelargestcontentfulpaintcandidate-url①">url</a></code> set to <var>url</var>, <code class="idl"><a data-link-type="idl" href="#dom-performancelargestcontentfulpaintcandidate-id" id="ref-for-dom-performancelargestcontentfulpaintcandidate-id①">id</a></code> set to <var>id</var>, <code class="idl"><a data-link-type="idl" href="https://w3c.github.io/performance-timeline/#dom-performanceentry-starttime" id="ref-for-dom-performanceentry-starttime①">startTime</a></code> set to <var>time</var>, <code class="idl"><a data-link-type="idl" href="#dom-performancelargestcontentfulpaintcandidate-responseend" id="ref-for-dom-performancelargestcontentfulpaintcandidate-responseend①">responseEnd</a></code> set to <var>responseEnd</var>,
-   and its <code class="idl"><a data-link-type="idl" href="#dom-performancelargestcontentfulpaintcandidate-element" id="ref-for-dom-performancelargestcontentfulpaintcandidate-element②">element</a></code> set to <var>element</var>.</p>
+        <p>Let <var>contentInfo</var> be a <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#ordered-map" id="ref-for-ordered-map">map</a> with <var>contentInfo</var>["size"] = <var>size</var>, <var>contentInfo</var>["url"] = <var>url</var>, <var>contentInfo</var>["id"] = <var>id</var>, <var>contentInfo</var>["renderTime"] = <var>renderTime</var>, <var>contentInfo</var>["loadTime"] = <var>loadTime</var>, and contentInfo["element"] = <var>element</var>.</p>
+       <li data-md>
+        <p><a data-link-type="dfn" href="#create-a-largestcontentfulpaint-entry" id="ref-for-create-a-largestcontentfulpaint-entry">Create a LargestContentfulPaint entry</a> with <var>contentInfo</var>, and <var>document</var> as inputs.</p>
+      </ol>
+    </dl>
+   </div>
+   <h3 class="heading settled" data-level="3.2" id="sec-create-entry"><span class="secno">3.2. </span><span class="content">Create a LargestContentfulPaint entry</span><a class="self-link" href="#sec-create-entry"></a></h3>
+   <p>In order to <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="create-a-largestcontentfulpaint-entry">create a <code class="idl"><a data-link-type="idl" href="#largestcontentfulpaint" id="ref-for-largestcontentfulpaint③">LargestContentfulPaint</a></code> entry</dfn>, the user agent must run the following steps:</p>
+   <div class="algorithm" data-algorithm="LargestContentfulPaint create-entry">
+    <dl>
+     <dt data-md>Input
+     <dd data-md>
+      <p><var>contentInfo</var>, a <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#ordered-map" id="ref-for-ordered-map①">map</a></p>
+     <dd data-md>
+      <p><var>document</var>, a <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#document" id="ref-for-document②">Document</a></code></p>
+     <dt data-md>Output
+     <dd data-md>
+      <p>None</p>
+      <ol>
+       <li data-md>
+        <p>Set <var>document</var>’s <a data-link-type="dfn" href="#largest-contentful-paint-size" id="ref-for-largest-contentful-paint-size①">largest contentful paint size</a> to <var>contentInfo</var>["size"].</p>
+       <li data-md>
+        <p>Let <var>entry</var> be a new <code class="idl"><a data-link-type="idl" href="#largestcontentfulpaint" id="ref-for-largestcontentfulpaint④">LargestContentfulPaint</a></code> entry with <var>document</var>’s <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-relevant-realm" id="ref-for-concept-relevant-realm">relevant realm</a>, with its</p>
+        <ul>
+         <li data-md>
+          <p><code class="idl"><a data-link-type="idl" href="#dom-largestcontentfulpaint-size" id="ref-for-dom-largestcontentfulpaint-size①">size</a></code> set to <var>contentInfo</var>["size"],</p>
+         <li data-md>
+          <p><code class="idl"><a data-link-type="idl" href="#dom-largestcontentfulpaint-url" id="ref-for-dom-largestcontentfulpaint-url①">url</a></code> set to <var>contentInfo</var>["url"],</p>
+         <li data-md>
+          <p><code class="idl"><a data-link-type="idl" href="#dom-largestcontentfulpaint-id" id="ref-for-dom-largestcontentfulpaint-id①">id</a></code> set to <var>contentInfo</var>["id"],</p>
+         <li data-md>
+          <p><code class="idl"><a data-link-type="idl" href="#dom-largestcontentfulpaint-rendertime" id="ref-for-dom-largestcontentfulpaint-rendertime①">renderTime</a></code> set to <var>contentInfo</var>["renderTime"],</p>
+         <li data-md>
+          <p><code class="idl"><a data-link-type="idl" href="#dom-largestcontentfulpaint-loadtime" id="ref-for-dom-largestcontentfulpaint-loadtime①">loadTime</a></code> set to <var>contentInfo</var>["loadTime"],</p>
+         <li data-md>
+          <p>and <code class="idl"><a data-link-type="idl" href="#dom-largestcontentfulpaint-element" id="ref-for-dom-largestcontentfulpaint-element②">element</a></code> set to <var>contentInfo</var>["element"].</p>
+        </ul>
        <li data-md>
         <p><a data-link-type="dfn" href="https://w3c.github.io/performance-timeline/#dfn-queue-a-performanceentry" id="ref-for-dfn-queue-a-performanceentry">Queue the PerformanceEntry</a> <var>entry</var>.</p>
       </ol>
     </dl>
    </div>
+   <h3 class="heading settled" data-level="3.3" id="sec-modifications-DOM"><span class="secno">3.3. </span><span class="content">Modifications to the DOM specification</span><a class="self-link" href="#sec-modifications-DOM"></a></h3>
+   <p><em>This section will be removed once the <a data-link-type="biblio" href="#biblio-dom">[DOM]</a> specification has been modified.</em></p>
+   <div class="algorithm" data-algorithm="additions to event dispatch">
+     We modify the <a data-link-type="dfn" href="https://dom.spec.whatwg.org#concept-event-dispatch" id="ref-for-concept-event-dispatch">event dispatch algorithm</a> as follows. 
+    <p>Right after step 1, we add the following step:</p>
+    <ul>
+     <li data-md>
+      <p>If <var>target</var>’s <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-relevant-global" id="ref-for-concept-relevant-global①">relevant global object</a> is a <code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/window-object.html#window" id="ref-for-window①">Window</a></code> object, <var>event</var>’s <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#dom-event-type" id="ref-for-dom-event-type">type</a></code> is <code class="idl"><a data-link-type="idl" href="https://drafts.csswg.org/cssom-view-1/#eventdef-document-scroll" id="ref-for-eventdef-document-scroll">scroll</a></code> and its <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#dom-event-istrusted" id="ref-for-dom-event-istrusted">isTrusted</a></code> is false, set <var>target</var>’s <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-relevant-global" id="ref-for-concept-relevant-global②">relevant global object</a>'s <a data-link-type="dfn" href="#has-dispatched-scroll-event" id="ref-for-has-dispatched-scroll-event①">has dispatched scroll event</a> to true.</p>
+    </ul>
+   </div>
+   <h3 class="heading settled" data-level="3.4" id="sec-modifications-HTML"><span class="secno">3.4. </span><span class="content">Modifications to the HTML specification</span><a class="self-link" href="#sec-modifications-HTML"></a></h3>
+    <em>This section will be removed once the <a data-link-type="biblio" href="#biblio-html">[HTML]</a> specification has been modified.</em> 
+   <p>Each <code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/window-object.html#window" id="ref-for-window②">Window</a></code> has <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="has-dispatched-scroll-event">has dispatched scroll event</dfn>, a boolean which is initially set to false.</p>
    <h2 class="heading settled" data-level="4" id="sec-security"><span class="secno">4. </span><span class="content">Security &amp; privacy considerations</span><a class="self-link" href="#sec-security"></a></h2>
    <p>This API relies on Element Timing for its underlying primitives. LCP may expose some element not exposed by Element Timing in case that they are smaller than Element Timing’s limits, but are still the largest elements to be painted up until that point in the page’s loading. That does not seem to expose any sensitive information beyond what Element Timing already enables.</p>
   </main>
   <div data-fill-with="conformance">
-   <h2 class="no-ref no-num heading settled" id="conformance"><span class="content"> Conformance</span><a class="self-link" href="#conformance"></a></h2>
-   <p> Conformance requirements are expressed with a combination of descriptive assertions and RFC 2119 terminology.
-            The key words “MUST”, “MUST NOT”, “REQUIRED”, “SHALL”, “SHALL NOT”, “SHOULD”, “SHOULD NOT”, “RECOMMENDED”, “MAY”, and “OPTIONAL”
-            in the normative parts of this document
-            are to be interpreted as described in RFC 2119.
-            However, for readability,
-            these words do not appear in all uppercase letters in this specification. </p>
-   <p> All of the text of this specification is normative
-            except sections explicitly marked as non-normative, examples, and notes. <a data-link-type="biblio" href="#biblio-rfc2119">[RFC2119]</a> </p>
-   <p> Examples in this specification are introduced with the words “for example”
-            or are set apart from the normative text with <code>class="example"</code>, like this: </p>
-   <div class="example" id="example-example"><a class="self-link" href="#example-example"></a> This is an example of an informative example. </div>
-   <p> Informative notes begin with the word “Note”
-            and are set apart from the normative text with <code>class="note"</code>, like this: </p>
-   <p class="note" role="note"> Note, this is an informative note. </p>
+   <h2 class="no-ref no-num heading settled" id="w3c-conformance"><span class="content">Conformance</span><a class="self-link" href="#w3c-conformance"></a></h2>
+   <h3 class="no-ref no-num heading settled" id="w3c-conventions"><span class="content">Document conventions</span><a class="self-link" href="#w3c-conventions"></a></h3>
+   <p>Conformance requirements are expressed
+    with a combination of descriptive assertions
+    and RFC 2119 terminology.
+    The key words “MUST”, “MUST NOT”, “REQUIRED”, “SHALL”, “SHALL NOT”, “SHOULD”, “SHOULD NOT”, “RECOMMENDED”, “MAY”, and “OPTIONAL”
+    in the normative parts of this document
+    are to be interpreted as described in RFC 2119.
+    However, for readability,
+    these words do not appear in all uppercase letters in this specification. </p>
+   <p>All of the text of this specification is normative
+    except sections explicitly marked as non-normative, examples, and notes. <a data-link-type="biblio" href="#biblio-rfc2119">[RFC2119]</a> </p>
+   <p>Examples in this specification are introduced with the words “for example”
+    or are set apart from the normative text
+    with <code class="highlight"><c- kr>class</c-><c- o>=</c-><c- u>"example"</c-></code>,
+    like this: </p>
+   <div class="example" id="w3c-example">
+    <a class="self-link" href="#w3c-example"></a> 
+    <p>This is an example of an informative example. </p>
+   </div>
+   <p>Informative notes begin with the word “Note”
+    and are set apart from the normative text
+    with <code class="highlight"><c- kr>class</c-><c- o>=</c-><c- u>"note"</c-></code>,
+    like this: </p>
+   <p class="note" role="note">Note, this is an informative note. </p>
+   <h3 class="no-ref no-num heading settled" id="w3c-conformant-algorithms"><span class="content">Conformant Algorithms</span><a class="self-link" href="#w3c-conformant-algorithms"></a></h3>
+   <p>Requirements phrased in the imperative as part of algorithms
+    (such as "strip any leading space characters"
+    or "return false and abort these steps")
+    are to be interpreted with the meaning of the key word
+    ("must", "should", "may", etc)
+    used in introducing the algorithm. </p>
+   <p>Conformance requirements phrased as algorithms or specific steps
+    can be implemented in any manner,
+    so long as the end result is equivalent.
+    In particular, the algorithms defined in this specification
+    are intended to be easy to understand
+    and are not intended to be performant.
+    Implementers are encouraged to optimize. </p>
   </div>
-<script>
-(function() {
-  "use strict";
-  var collapseSidebarText = '<span aria-hidden="true">←</span> '
-                          + '<span>Collapse Sidebar</span>';
-  var expandSidebarText   = '<span aria-hidden="true">→</span> '
-                          + '<span>Pop Out Sidebar</span>';
-  var tocJumpText         = '<span aria-hidden="true">↑</span> '
-                          + '<span>Jump to Table of Contents</span>';
-
-  var sidebarMedia = window.matchMedia('screen and (min-width: 78em)');
-  var autoToggle   = function(e){ toggleSidebar(e.matches) };
-  if(sidebarMedia.addListener) {
-    sidebarMedia.addListener(autoToggle);
-  }
-
-  function toggleSidebar(on) {
-    if (on == undefined) {
-      on = !document.body.classList.contains('toc-sidebar');
-    }
-
-    /* Don’t scroll to compensate for the ToC if we’re above it already. */
-    var headY = 0;
-    var head = document.querySelector('.head');
-    if (head) {
-      // terrible approx of "top of ToC"
-      headY += head.offsetTop + head.offsetHeight;
-    }
-    var skipScroll = window.scrollY < headY;
-
-    var toggle = document.getElementById('toc-toggle');
-    var tocNav = document.getElementById('toc');
-    if (on) {
-      var tocHeight = tocNav.offsetHeight;
-      document.body.classList.add('toc-sidebar');
-      document.body.classList.remove('toc-inline');
-      toggle.innerHTML = collapseSidebarText;
-      if (!skipScroll) {
-        window.scrollBy(0, 0 - tocHeight);
-      }
-      tocNav.focus();
-      sidebarMedia.addListener(autoToggle); // auto-collapse when out of room
-    }
-    else {
-      document.body.classList.add('toc-inline');
-      document.body.classList.remove('toc-sidebar');
-      toggle.innerHTML = expandSidebarText;
-      if (!skipScroll) {
-        window.scrollBy(0, tocNav.offsetHeight);
-      }
-      if (toggle.matches(':hover')) {
-        /* Unfocus button when not using keyboard navigation,
-           because I don’t know where else to send the focus. */
-        toggle.blur();
-      }
-    }
-  }
-
-  function createSidebarToggle() {
-    /* Create the sidebar toggle in JS; it shouldn’t exist when JS is off. */
-    var toggle = document.createElement('a');
-      /* This should probably be a button, but appearance isn’t standards-track.*/
-    toggle.id = 'toc-toggle';
-    toggle.class = 'toc-toggle';
-    toggle.href = '#toc';
-    toggle.innerHTML = collapseSidebarText;
-
-    sidebarMedia.addListener(autoToggle);
-    var toggler = function(e) {
-      e.preventDefault();
-      sidebarMedia.removeListener(autoToggle); // persist explicit off states
-      toggleSidebar();
-      return false;
-    }
-    toggle.addEventListener('click', toggler, false);
-
-
-    /* Get <nav id=toc-nav>, or make it if we don’t have one. */
-    var tocNav = document.getElementById('toc-nav');
-    if (!tocNav) {
-      tocNav = document.createElement('p');
-      tocNav.id = 'toc-nav';
-      /* Prepend for better keyboard navigation */
-      document.body.insertBefore(tocNav, document.body.firstChild);
-    }
-    /* While we’re at it, make sure we have a Jump to Toc link. */
-    var tocJump = document.getElementById('toc-jump');
-    if (!tocJump) {
-      tocJump = document.createElement('a');
-      tocJump.id = 'toc-jump';
-      tocJump.href = '#toc';
-      tocJump.innerHTML = tocJumpText;
-      tocNav.appendChild(tocJump);
-    }
-
-    tocNav.appendChild(toggle);
-  }
-
-  var toc = document.getElementById('toc');
-  if (toc) {
-    createSidebarToggle();
-    toggleSidebar(sidebarMedia.matches);
-
-    /* If the sidebar has been manually opened and is currently overlaying the text
-       (window too small for the MQ to add the margin to body),
-       then auto-close the sidebar once you click on something in there. */
-    toc.addEventListener('click', function(e) {
-      if(e.target.tagName.toLowerCase() == "a" && document.body.classList.contains('toc-sidebar') && !sidebarMedia.matches) {
-        toggleSidebar(false);
-      }
-    }, false);
-  }
-  else {
-    console.warn("Can’t find Table of Contents. Please use <nav id='toc'> around the ToC.");
-  }
-
-  /* Wrap tables in case they overflow */
-  var tables = document.querySelectorAll(':not(.overlarge) > table.data, :not(.overlarge) > table.index');
-  var numTables = tables.length;
-  for (var i = 0; i < numTables; i++) {
-    var table = tables[i];
-    var wrapper = document.createElement('div');
-    wrapper.className = 'overlarge';
-    table.parentNode.insertBefore(wrapper, table);
-    wrapper.appendChild(table);
-  }
-
-})();
-</script>
+<script src="https://www.w3.org/scripts/TR/2016/fixup.js"></script>
   <h2 class="no-num no-ref heading settled" id="index"><span class="content">Index</span><a class="self-link" href="#index"></a></h2>
   <h3 class="no-num no-ref heading settled" id="index-defined-here"><span class="content">Terms defined by this specification</span><a class="self-link" href="#index-defined-here"></a></h3>
   <ul class="index">
+   <li><a href="#content-set">content set</a><span>, in §2.1</span>
+   <li><a href="#create-a-largestcontentfulpaint-entry">create a LargestContentfulPaint entry</a><span>, in §3.2</span>
    <li>
     element
     <ul>
-     <li><a href="#dom-performancelargestcontentfulpaintcandidate-element">attribute for PerformanceLargestContentfulPaintCandidate</a><span>, in §2.1</span>
+     <li><a href="#dom-largestcontentfulpaint-element">attribute for LargestContentfulPaint</a><span>, in §2.1</span>
      <li><a href="#element">definition of</a><span>, in §2.1</span>
     </ul>
+   <li><a href="#has-dispatched-scroll-event">has dispatched scroll event</a><span>, in §3.4</span>
    <li>
     id
     <ul>
-     <li><a href="#dom-performancelargestcontentfulpaintcandidate-id">attribute for PerformanceLargestContentfulPaintCandidate</a><span>, in §2.1</span>
+     <li><a href="#dom-largestcontentfulpaint-id">attribute for LargestContentfulPaint</a><span>, in §2.1</span>
      <li><a href="#id">definition of</a><span>, in §2.1</span>
     </ul>
-   <li><a href="#largestcontentfulpaintsize">largestContentfulPaintSize</a><span>, in §2.1</span>
-   <li><a href="#performancelargestcontentfulpaintcandidate">PerformanceLargestContentfulPaintCandidate</a><span>, in §2.1</span>
-   <li><a href="#potentially-add-a-performancelargestcontentfulpaintcandidate-entry">potentially add a PerformanceLargestContentfulPaintCandidate entry</a><span>, in §3</span>
+   <li><a href="#largestcontentfulpaint">LargestContentfulPaint</a><span>, in §2.1</span>
+   <li><a href="#largest-contentful-paint-size">largest contentful paint size</a><span>, in §2.1</span>
    <li>
-    responseEnd
+    loadTime
     <ul>
-     <li><a href="#dom-performancelargestcontentfulpaintcandidate-responseend">attribute for PerformanceLargestContentfulPaintCandidate</a><span>, in §2.1</span>
-     <li><a href="#responseend">definition of</a><span>, in §2.1</span>
+     <li><a href="#dom-largestcontentfulpaint-loadtime">attribute for LargestContentfulPaint</a><span>, in §2.1</span>
+     <li><a href="#loadtime">definition of</a><span>, in §2.1</span>
+    </ul>
+   <li><a href="#potentially-add-a-largestcontentfulpaint-entry">potentially add a LargestContentfulPaint entry</a><span>, in §3.1</span>
+   <li>
+    renderTime
+    <ul>
+     <li><a href="#dom-largestcontentfulpaint-rendertime">attribute for LargestContentfulPaint</a><span>, in §2.1</span>
+     <li><a href="#rendertime">definition of</a><span>, in §2.1</span>
     </ul>
    <li>
     size
     <ul>
-     <li><a href="#dom-performancelargestcontentfulpaintcandidate-size">attribute for PerformanceLargestContentfulPaintCandidate</a><span>, in §2.1</span>
+     <li><a href="#dom-largestcontentfulpaint-size">attribute for LargestContentfulPaint</a><span>, in §2.1</span>
      <li><a href="#size">definition of</a><span>, in §2.1</span>
     </ul>
-   <li><a href="#starttime">startTime</a><span>, in §2.1</span>
+   <li><a href="#dom-largestcontentfulpaint-tojson">toJSON()</a><span>, in §2.1</span>
    <li>
     url
     <ul>
-     <li><a href="#dom-performancelargestcontentfulpaintcandidate-url">attribute for PerformanceLargestContentfulPaintCandidate</a><span>, in §2.1</span>
+     <li><a href="#dom-largestcontentfulpaint-url">attribute for LargestContentfulPaint</a><span>, in §2.1</span>
      <li><a href="#url">definition of</a><span>, in §2.1</span>
     </ul>
   </ul>
+  <aside class="dfn-panel" data-for="term-for-eventdef-document-scroll">
+   <a href="https://drafts.csswg.org/cssom-view-1/#eventdef-document-scroll">https://drafts.csswg.org/cssom-view-1/#eventdef-document-scroll</a><b>Referenced in:</b>
+   <ul>
+    <li><a href="#ref-for-eventdef-document-scroll">3.3. Modifications to the DOM specification</a>
+   </ul>
+  </aside>
   <aside class="dfn-panel" data-for="term-for-document">
    <a href="https://dom.spec.whatwg.org/#document">https://dom.spec.whatwg.org/#document</a><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-document">2.1. PerformanceLargestContentfulPaintCandidate interface</a> <a href="#ref-for-document①">(2)</a>
+    <li><a href="#ref-for-document">2.1. LargestContentfulPaint interface</a> <a href="#ref-for-document①">(2)</a>
+    <li><a href="#ref-for-document②">3.2. Create a LargestContentfulPaint entry</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="term-for-element">
    <a href="https://dom.spec.whatwg.org/#element">https://dom.spec.whatwg.org/#element</a><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-element">2.1. PerformanceLargestContentfulPaintCandidate interface</a> <a href="#ref-for-element①">(2)</a>
+    <li><a href="#ref-for-element">2.1. LargestContentfulPaint interface</a> <a href="#ref-for-element①">(2)</a> <a href="#ref-for-element③">(3)</a> <a href="#ref-for-element④">(4)</a> <a href="#ref-for-element⑤">(5)</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="term-for-context-object">
    <a href="https://dom.spec.whatwg.org/#context-object">https://dom.spec.whatwg.org/#context-object</a><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-context-object">2.1. PerformanceLargestContentfulPaintCandidate interface</a> <a href="#ref-for-context-object①">(2)</a> <a href="#ref-for-context-object②">(3)</a> <a href="#ref-for-context-object③">(4)</a> <a href="#ref-for-context-object④">(5)</a>
+    <li><a href="#ref-for-context-object">2.1. LargestContentfulPaint interface</a> <a href="#ref-for-context-object①">(2)</a> <a href="#ref-for-context-object②">(3)</a> <a href="#ref-for-context-object③">(4)</a> <a href="#ref-for-context-object④">(5)</a> <a href="#ref-for-context-object⑤">(6)</a> <a href="#ref-for-context-object⑥">(7)</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="term-for-concept-tree-descendant">
    <a href="https://dom.spec.whatwg.org/#concept-tree-descendant">https://dom.spec.whatwg.org/#concept-tree-descendant</a><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-concept-tree-descendant">2.1. PerformanceLargestContentfulPaintCandidate interface</a>
+    <li><a href="#ref-for-concept-tree-descendant">2.1. LargestContentfulPaint interface</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="term-for-concept-document">
    <a href="https://dom.spec.whatwg.org#concept-document">https://dom.spec.whatwg.org#concept-document</a><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-concept-document">3. Processing model</a>
+    <li><a href="#ref-for-concept-document">3.1. Potentially add LargestContentfulPaint entry</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="term-for-dom-element-id">
    <a href="https://dom.spec.whatwg.org#dom-element-id">https://dom.spec.whatwg.org#dom-element-id</a><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-dom-element-id">3. Processing model</a>
+    <li><a href="#ref-for-dom-element-id">3.1. Potentially add LargestContentfulPaint entry</a>
+   </ul>
+  </aside>
+  <aside class="dfn-panel" data-for="term-for-concept-event-dispatch">
+   <a href="https://dom.spec.whatwg.org#concept-event-dispatch">https://dom.spec.whatwg.org#concept-event-dispatch</a><b>Referenced in:</b>
+   <ul>
+    <li><a href="#ref-for-concept-event-dispatch">3.3. Modifications to the DOM specification</a>
+   </ul>
+  </aside>
+  <aside class="dfn-panel" data-for="term-for-dom-event-istrusted">
+   <a href="https://dom.spec.whatwg.org/#dom-event-istrusted">https://dom.spec.whatwg.org/#dom-event-istrusted</a><b>Referenced in:</b>
+   <ul>
+    <li><a href="#ref-for-dom-event-istrusted">3.3. Modifications to the DOM specification</a>
+   </ul>
+  </aside>
+  <aside class="dfn-panel" data-for="term-for-dom-event-type">
+   <a href="https://dom.spec.whatwg.org/#dom-event-type">https://dom.spec.whatwg.org/#dom-event-type</a><b>Referenced in:</b>
+   <ul>
+    <li><a href="#ref-for-dom-event-type">3.3. Modifications to the DOM specification</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="term-for-sec-elements-exposed">
@@ -1886,285 +2504,509 @@ This allows developers to detect support for the API.</p>
   <aside class="dfn-panel" data-for="term-for-get-an-element">
    <a href="https://wicg.github.io/element-timing/#get-an-element">https://wicg.github.io/element-timing/#get-an-element</a><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-get-an-element">2.1. PerformanceLargestContentfulPaintCandidate interface</a>
+    <li><a href="#ref-for-get-an-element">2.1. LargestContentfulPaint interface</a>
    </ul>
   </aside>
-  <aside class="dfn-panel" data-for="term-for-get-response-end-time">
-   <a href="https://wicg.github.io/element-timing/#get-response-end-time">https://wicg.github.io/element-timing/#get-response-end-time</a><b>Referenced in:</b>
+  <aside class="dfn-panel" data-for="term-for-has-dispatched-input-event">
+   <a href="https://wicg.github.io/event-timing#has-dispatched-input-event">https://wicg.github.io/event-timing#has-dispatched-input-event</a><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-get-response-end-time">3. Processing model</a>
+    <li><a href="#ref-for-has-dispatched-input-event">3.1. Potentially add LargestContentfulPaint entry</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="term-for-request">
    <a href="https://fetch.spec.whatwg.org/#request">https://fetch.spec.whatwg.org/#request</a><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-request">3. Processing model</a>
+    <li><a href="#ref-for-request">2.1. LargestContentfulPaint interface</a>
+    <li><a href="#ref-for-request①">3.1. Potentially add LargestContentfulPaint entry</a>
+   </ul>
+  </aside>
+  <aside class="dfn-panel" data-for="term-for-dom-request-url">
+   <a href="https://fetch.spec.whatwg.org/#dom-request-url">https://fetch.spec.whatwg.org/#dom-request-url</a><b>Referenced in:</b>
+   <ul>
+    <li><a href="#ref-for-dom-request-url">3.1. Potentially add LargestContentfulPaint entry</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="term-for-domrectreadonly">
    <a href="https://drafts.fxtf.org/geometry-1/#domrectreadonly">https://drafts.fxtf.org/geometry-1/#domrectreadonly</a><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-domrectreadonly">3. Processing model</a>
+    <li><a href="#ref-for-domrectreadonly">3.1. Potentially add LargestContentfulPaint entry</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="term-for-dom-domrectreadonly-height">
    <a href="https://drafts.fxtf.org/geometry-1/#dom-domrectreadonly-height">https://drafts.fxtf.org/geometry-1/#dom-domrectreadonly-height</a><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-dom-domrectreadonly-height">3. Processing model</a>
+    <li><a href="#ref-for-dom-domrectreadonly-height">3.1. Potentially add LargestContentfulPaint entry</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="term-for-dom-domrectreadonly-width">
    <a href="https://drafts.fxtf.org/geometry-1/#dom-domrectreadonly-width">https://drafts.fxtf.org/geometry-1/#dom-domrectreadonly-width</a><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-dom-domrectreadonly-width">3. Processing model</a>
+    <li><a href="#ref-for-dom-domrectreadonly-width">3.1. Potentially add LargestContentfulPaint entry</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="term-for-dom-domhighrestimestamp">
    <a href="https://w3c.github.io/hr-time#dom-domhighrestimestamp">https://w3c.github.io/hr-time#dom-domhighrestimestamp</a><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-dom-domhighrestimestamp">2.1. PerformanceLargestContentfulPaintCandidate interface</a>
+    <li><a href="#ref-for-dom-domhighrestimestamp">2.1. LargestContentfulPaint interface</a> <a href="#ref-for-dom-domhighrestimestamp①">(2)</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="term-for-window">
    <a href="https://html.spec.whatwg.org/multipage/window-object.html#window">https://html.spec.whatwg.org/multipage/window-object.html#window</a><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-window">3. Processing model</a>
+    <li><a href="#ref-for-window">3.1. Potentially add LargestContentfulPaint entry</a>
+    <li><a href="#ref-for-window①">3.3. Modifications to the DOM specification</a>
+    <li><a href="#ref-for-window②">3.4. Modifications to the HTML specification</a>
+   </ul>
+  </aside>
+  <aside class="dfn-panel" data-for="term-for-dom-img-height">
+   <a href="https://html.spec.whatwg.org/multipage/webappapis.html#dom-img-height">https://html.spec.whatwg.org/multipage/webappapis.html#dom-img-height</a><b>Referenced in:</b>
+   <ul>
+    <li><a href="#ref-for-dom-img-height">3.1. Potentially add LargestContentfulPaint entry</a>
+   </ul>
+  </aside>
+  <aside class="dfn-panel" data-for="term-for-the-img-element">
+   <a href="https://html.spec.whatwg.org/multipage/embedded-content.html#the-img-element">https://html.spec.whatwg.org/multipage/embedded-content.html#the-img-element</a><b>Referenced in:</b>
+   <ul>
+    <li><a href="#ref-for-the-img-element">3.1. Potentially add LargestContentfulPaint entry</a> <a href="#ref-for-the-img-element①">(2)</a>
+   </ul>
+  </aside>
+  <aside class="dfn-panel" data-for="term-for-dom-img-naturalheight">
+   <a href="https://html.spec.whatwg.org/multipage/webappapis.html#dom-img-naturalheight">https://html.spec.whatwg.org/multipage/webappapis.html#dom-img-naturalheight</a><b>Referenced in:</b>
+   <ul>
+    <li><a href="#ref-for-dom-img-naturalheight">3.1. Potentially add LargestContentfulPaint entry</a>
+   </ul>
+  </aside>
+  <aside class="dfn-panel" data-for="term-for-dom-img-naturalwidth">
+   <a href="https://html.spec.whatwg.org/multipage/webappapis.html#dom-img-naturalwidth">https://html.spec.whatwg.org/multipage/webappapis.html#dom-img-naturalwidth</a><b>Referenced in:</b>
+   <ul>
+    <li><a href="#ref-for-dom-img-naturalwidth">3.1. Potentially add LargestContentfulPaint entry</a>
+   </ul>
+  </aside>
+  <aside class="dfn-panel" data-for="term-for-concept-relevant-global">
+   <a href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-relevant-global">https://html.spec.whatwg.org/multipage/webappapis.html#concept-relevant-global</a><b>Referenced in:</b>
+   <ul>
+    <li><a href="#ref-for-concept-relevant-global">3.1. Potentially add LargestContentfulPaint entry</a>
+    <li><a href="#ref-for-concept-relevant-global①">3.3. Modifications to the DOM specification</a> <a href="#ref-for-concept-relevant-global②">(2)</a>
+   </ul>
+  </aside>
+  <aside class="dfn-panel" data-for="term-for-concept-relevant-realm">
+   <a href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-relevant-realm">https://html.spec.whatwg.org/multipage/webappapis.html#concept-relevant-realm</a><b>Referenced in:</b>
+   <ul>
+    <li><a href="#ref-for-concept-relevant-realm">3.2. Create a LargestContentfulPaint entry</a>
+   </ul>
+  </aside>
+  <aside class="dfn-panel" data-for="term-for-dom-img-width">
+   <a href="https://html.spec.whatwg.org/multipage/webappapis.html#dom-img-width">https://html.spec.whatwg.org/multipage/webappapis.html#dom-img-width</a><b>Referenced in:</b>
+   <ul>
+    <li><a href="#ref-for-dom-img-width">3.1. Potentially add LargestContentfulPaint entry</a>
+   </ul>
+  </aside>
+  <aside class="dfn-panel" data-for="term-for-set-append">
+   <a href="https://infra.spec.whatwg.org/#set-append">https://infra.spec.whatwg.org/#set-append</a><b>Referenced in:</b>
+   <ul>
+    <li><a href="#ref-for-set-append">3.1. Potentially add LargestContentfulPaint entry</a>
+   </ul>
+  </aside>
+  <aside class="dfn-panel" data-for="term-for-list-contain">
+   <a href="https://infra.spec.whatwg.org/#list-contain">https://infra.spec.whatwg.org/#list-contain</a><b>Referenced in:</b>
+   <ul>
+    <li><a href="#ref-for-list-contain">3.1. Potentially add LargestContentfulPaint entry</a>
+   </ul>
+  </aside>
+  <aside class="dfn-panel" data-for="term-for-ordered-map">
+   <a href="https://infra.spec.whatwg.org/#ordered-map">https://infra.spec.whatwg.org/#ordered-map</a><b>Referenced in:</b>
+   <ul>
+    <li><a href="#ref-for-ordered-map">3.1. Potentially add LargestContentfulPaint entry</a>
+    <li><a href="#ref-for-ordered-map①">3.2. Create a LargestContentfulPaint entry</a>
+   </ul>
+  </aside>
+  <aside class="dfn-panel" data-for="term-for-pair">
+   <a href="https://infra.spec.whatwg.org/#pair">https://infra.spec.whatwg.org/#pair</a><b>Referenced in:</b>
+   <ul>
+    <li><a href="#ref-for-pair">2.1. LargestContentfulPaint interface</a> <a href="#ref-for-pair①">(2)</a>
+    <li><a href="#ref-for-pair②">3.1. Potentially add LargestContentfulPaint entry</a>
+   </ul>
+  </aside>
+  <aside class="dfn-panel" data-for="term-for-ordered-set">
+   <a href="https://infra.spec.whatwg.org/#ordered-set">https://infra.spec.whatwg.org/#ordered-set</a><b>Referenced in:</b>
+   <ul>
+    <li><a href="#ref-for-ordered-set">2.1. LargestContentfulPaint interface</a> <a href="#ref-for-ordered-set①">(2)</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="term-for-the-performanceentry-interface">
    <a href="https://w3c.github.io/performance-timeline/#the-performanceentry-interface">https://w3c.github.io/performance-timeline/#the-performanceentry-interface</a><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-the-performanceentry-interface">2.1. PerformanceLargestContentfulPaintCandidate interface</a>
+    <li><a href="#ref-for-the-performanceentry-interface">2.1. LargestContentfulPaint interface</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="term-for-dom-performanceentry-duration">
    <a href="https://w3c.github.io/performance-timeline/#dom-performanceentry-duration">https://w3c.github.io/performance-timeline/#dom-performanceentry-duration</a><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-dom-performanceentry-duration">2.1. PerformanceLargestContentfulPaintCandidate interface</a>
+    <li><a href="#ref-for-dom-performanceentry-duration">2.1. LargestContentfulPaint interface</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="term-for-dom-performanceentry-entrytype">
    <a href="https://w3c.github.io/performance-timeline/#dom-performanceentry-entrytype">https://w3c.github.io/performance-timeline/#dom-performanceentry-entrytype</a><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-dom-performanceentry-entrytype">2.1. PerformanceLargestContentfulPaintCandidate interface</a>
+    <li><a href="#ref-for-dom-performanceentry-entrytype">2.1. LargestContentfulPaint interface</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="term-for-dom-performanceentry-name">
    <a href="https://w3c.github.io/performance-timeline/#dom-performanceentry-name">https://w3c.github.io/performance-timeline/#dom-performanceentry-name</a><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-dom-performanceentry-name">2.1. PerformanceLargestContentfulPaintCandidate interface</a>
+    <li><a href="#ref-for-dom-performanceentry-name">2.1. LargestContentfulPaint interface</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="term-for-dfn-queue-a-performanceentry">
    <a href="https://w3c.github.io/performance-timeline/#dfn-queue-a-performanceentry">https://w3c.github.io/performance-timeline/#dfn-queue-a-performanceentry</a><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-dfn-queue-a-performanceentry">3. Processing model</a>
+    <li><a href="#ref-for-dfn-queue-a-performanceentry">3.2. Create a LargestContentfulPaint entry</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="term-for-dom-performanceentry-starttime">
    <a href="https://w3c.github.io/performance-timeline/#dom-performanceentry-starttime">https://w3c.github.io/performance-timeline/#dom-performanceentry-starttime</a><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-dom-performanceentry-starttime">2.1. PerformanceLargestContentfulPaintCandidate interface</a>
-    <li><a href="#ref-for-dom-performanceentry-starttime①">3. Processing model</a>
+    <li><a href="#ref-for-dom-performanceentry-starttime">2.1. LargestContentfulPaint interface</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="term-for-supportedentrytypes-attribute">
    <a href="https://w3c.github.io/performance-timeline/#supportedentrytypes-attribute">https://w3c.github.io/performance-timeline/#supportedentrytypes-attribute</a><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-supportedentrytypes-attribute">3. Processing model</a>
+    <li><a href="#ref-for-supportedentrytypes-attribute">3.1. Potentially add LargestContentfulPaint entry</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="term-for-idl-DOMString">
    <a href="https://heycam.github.io/webidl/#idl-DOMString">https://heycam.github.io/webidl/#idl-DOMString</a><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-idl-DOMString">2.1. PerformanceLargestContentfulPaintCandidate interface</a> <a href="#ref-for-idl-DOMString①">(2)</a> <a href="#ref-for-idl-DOMString②">(3)</a>
+    <li><a href="#ref-for-idl-DOMString">2.1. LargestContentfulPaint interface</a> <a href="#ref-for-idl-DOMString①">(2)</a> <a href="#ref-for-idl-DOMString②">(3)</a>
+   </ul>
+  </aside>
+  <aside class="dfn-panel" data-for="term-for-Default">
+   <a href="https://heycam.github.io/webidl/#Default">https://heycam.github.io/webidl/#Default</a><b>Referenced in:</b>
+   <ul>
+    <li><a href="#ref-for-Default">2.1. LargestContentfulPaint interface</a>
+   </ul>
+  </aside>
+  <aside class="dfn-panel" data-for="term-for-Exposed">
+   <a href="https://heycam.github.io/webidl/#Exposed">https://heycam.github.io/webidl/#Exposed</a><b>Referenced in:</b>
+   <ul>
+    <li><a href="#ref-for-Exposed">2.1. LargestContentfulPaint interface</a>
+   </ul>
+  </aside>
+  <aside class="dfn-panel" data-for="term-for-idl-object">
+   <a href="https://heycam.github.io/webidl/#idl-object">https://heycam.github.io/webidl/#idl-object</a><b>Referenced in:</b>
+   <ul>
+    <li><a href="#ref-for-idl-object">2.1. LargestContentfulPaint interface</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="term-for-idl-unsigned-long">
    <a href="https://heycam.github.io/webidl/#idl-unsigned-long">https://heycam.github.io/webidl/#idl-unsigned-long</a><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-idl-unsigned-long">2.1. PerformanceLargestContentfulPaintCandidate interface</a>
+    <li><a href="#ref-for-idl-unsigned-long">2.1. LargestContentfulPaint interface</a>
    </ul>
   </aside>
   <h3 class="no-num no-ref heading settled" id="index-defined-elsewhere"><span class="content">Terms defined by reference</span><a class="self-link" href="#index-defined-elsewhere"></a></h3>
   <ul class="index">
    <li>
+    <a data-link-type="biblio">[cssom-view-1]</a> defines the following terms:
+    <ul>
+     <li><span class="dfn-paneled" id="term-for-eventdef-document-scroll">scroll</span>
+    </ul>
+   <li>
     <a data-link-type="biblio">[DOM]</a> defines the following terms:
     <ul>
-     <li><span class="dfn-paneled" id="term-for-document" style="color:initial">Document</span>
-     <li><span class="dfn-paneled" id="term-for-element" style="color:initial">Element</span>
-     <li><span class="dfn-paneled" id="term-for-context-object" style="color:initial">context object</span>
-     <li><span class="dfn-paneled" id="term-for-concept-tree-descendant" style="color:initial">descendant</span>
-     <li><span class="dfn-paneled" id="term-for-concept-document" style="color:initial">document</span>
-     <li><span class="dfn-paneled" id="term-for-dom-element-id" style="color:initial">element id</span>
+     <li><span class="dfn-paneled" id="term-for-document">Document</span>
+     <li><span class="dfn-paneled" id="term-for-element">Element</span>
+     <li><span class="dfn-paneled" id="term-for-context-object">context object</span>
+     <li><span class="dfn-paneled" id="term-for-concept-tree-descendant">descendant</span>
+     <li><span class="dfn-paneled" id="term-for-concept-document">document</span>
+     <li><span class="dfn-paneled" id="term-for-dom-element-id">element id</span>
+     <li><span class="dfn-paneled" id="term-for-concept-event-dispatch">event dispatch algorithm</span>
+     <li><span class="dfn-paneled" id="term-for-dom-event-istrusted">isTrusted</span>
+     <li><span class="dfn-paneled" id="term-for-dom-event-type">type</span>
     </ul>
    <li>
     <a data-link-type="biblio">[ELEMENT-TIMING]</a> defines the following terms:
     <ul>
-     <li><span class="dfn-paneled" id="term-for-sec-elements-exposed" style="color:initial">exposed</span>
-     <li><span class="dfn-paneled" id="term-for-get-an-element" style="color:initial">get an element</span>
-     <li><span class="dfn-paneled" id="term-for-get-response-end-time" style="color:initial">get response end time</span>
+     <li><span class="dfn-paneled" id="term-for-sec-elements-exposed">exposed</span>
+     <li><span class="dfn-paneled" id="term-for-get-an-element">get an element</span>
+    </ul>
+   <li>
+    <a data-link-type="biblio">[EVENT-TIMING]</a> defines the following terms:
+    <ul>
+     <li><span class="dfn-paneled" id="term-for-has-dispatched-input-event">has dispatched input event</span>
     </ul>
    <li>
     <a data-link-type="biblio">[FETCH]</a> defines the following terms:
     <ul>
-     <li><span class="dfn-paneled" id="term-for-request" style="color:initial">Request</span>
+     <li><span class="dfn-paneled" id="term-for-request">Request</span>
+     <li><span class="dfn-paneled" id="term-for-dom-request-url">request url</span>
     </ul>
    <li>
     <a data-link-type="biblio">[geometry-1]</a> defines the following terms:
     <ul>
-     <li><span class="dfn-paneled" id="term-for-domrectreadonly" style="color:initial">DOMRectReadOnly</span>
-     <li><span class="dfn-paneled" id="term-for-dom-domrectreadonly-height" style="color:initial">height</span>
-     <li><span class="dfn-paneled" id="term-for-dom-domrectreadonly-width" style="color:initial">width</span>
+     <li><span class="dfn-paneled" id="term-for-domrectreadonly">DOMRectReadOnly</span>
+     <li><span class="dfn-paneled" id="term-for-dom-domrectreadonly-height">height</span>
+     <li><span class="dfn-paneled" id="term-for-dom-domrectreadonly-width">width</span>
     </ul>
    <li>
-    <a data-link-type="biblio">[hr-time]</a> defines the following terms:
+    <a data-link-type="biblio">[hr-time-2]</a> defines the following terms:
     <ul>
-     <li><span class="dfn-paneled" id="term-for-dom-domhighrestimestamp" style="color:initial">DOMHighResTimeStamp</span>
+     <li><span class="dfn-paneled" id="term-for-dom-domhighrestimestamp">DOMHighResTimeStamp</span>
     </ul>
    <li>
     <a data-link-type="biblio">[HTML]</a> defines the following terms:
     <ul>
-     <li><span class="dfn-paneled" id="term-for-window" style="color:initial">Window</span>
+     <li><span class="dfn-paneled" id="term-for-window">Window</span>
+     <li><span class="dfn-paneled" id="term-for-dom-img-height">height</span>
+     <li><span class="dfn-paneled" id="term-for-the-img-element">img</span>
+     <li><span class="dfn-paneled" id="term-for-dom-img-naturalheight">naturalHeight</span>
+     <li><span class="dfn-paneled" id="term-for-dom-img-naturalwidth">naturalWidth</span>
+     <li><span class="dfn-paneled" id="term-for-concept-relevant-global">relevant global object</span>
+     <li><span class="dfn-paneled" id="term-for-concept-relevant-realm">relevant realm</span>
+     <li><span class="dfn-paneled" id="term-for-dom-img-width">width</span>
+    </ul>
+   <li>
+    <a data-link-type="biblio">[INFRA]</a> defines the following terms:
+    <ul>
+     <li><span class="dfn-paneled" id="term-for-set-append">append</span>
+     <li><span class="dfn-paneled" id="term-for-list-contain">contain</span>
+     <li><span class="dfn-paneled" id="term-for-ordered-map">map</span>
+     <li><span class="dfn-paneled" id="term-for-pair">pair</span>
+     <li><span class="dfn-paneled" id="term-for-ordered-set">set</span>
     </ul>
    <li>
     <a data-link-type="biblio">[performance-timeline-2]</a> defines the following terms:
     <ul>
-     <li><span class="dfn-paneled" id="term-for-the-performanceentry-interface" style="color:initial">PerformanceEntry</span>
-     <li><span class="dfn-paneled" id="term-for-dom-performanceentry-duration" style="color:initial">duration</span>
-     <li><span class="dfn-paneled" id="term-for-dom-performanceentry-entrytype" style="color:initial">entryType</span>
-     <li><span class="dfn-paneled" id="term-for-dom-performanceentry-name" style="color:initial">name</span>
-     <li><span class="dfn-paneled" id="term-for-dfn-queue-a-performanceentry" style="color:initial">queue the performanceentry</span>
-     <li><span class="dfn-paneled" id="term-for-dom-performanceentry-starttime" style="color:initial">startTime</span>
-     <li><span class="dfn-paneled" id="term-for-supportedentrytypes-attribute" style="color:initial">supportedEntryTypes</span>
+     <li><span class="dfn-paneled" id="term-for-the-performanceentry-interface">PerformanceEntry</span>
+     <li><span class="dfn-paneled" id="term-for-dom-performanceentry-duration">duration</span>
+     <li><span class="dfn-paneled" id="term-for-dom-performanceentry-entrytype">entryType</span>
+     <li><span class="dfn-paneled" id="term-for-dom-performanceentry-name">name</span>
+     <li><span class="dfn-paneled" id="term-for-dfn-queue-a-performanceentry">queue the performanceentry</span>
+     <li><span class="dfn-paneled" id="term-for-dom-performanceentry-starttime">startTime</span>
+     <li><span class="dfn-paneled" id="term-for-supportedentrytypes-attribute">supportedEntryTypes</span>
     </ul>
    <li>
     <a data-link-type="biblio">[WebIDL]</a> defines the following terms:
     <ul>
-     <li><span class="dfn-paneled" id="term-for-idl-DOMString" style="color:initial">DOMString</span>
-     <li><span class="dfn-paneled" id="term-for-idl-unsigned-long" style="color:initial">unsigned long</span>
+     <li><span class="dfn-paneled" id="term-for-idl-DOMString">DOMString</span>
+     <li><span class="dfn-paneled" id="term-for-Default">Default</span>
+     <li><span class="dfn-paneled" id="term-for-Exposed">Exposed</span>
+     <li><span class="dfn-paneled" id="term-for-idl-object">object</span>
+     <li><span class="dfn-paneled" id="term-for-idl-unsigned-long">unsigned long</span>
     </ul>
   </ul>
   <h2 class="no-num no-ref heading settled" id="references"><span class="content">References</span><a class="self-link" href="#references"></a></h2>
   <h3 class="no-num no-ref heading settled" id="normative"><span class="content">Normative References</span><a class="self-link" href="#normative"></a></h3>
   <dl>
+   <dt id="biblio-cssom-view-1">[CSSOM-VIEW-1]
+   <dd>Simon Pieters. <a href="https://www.w3.org/TR/cssom-view-1/">CSSOM View Module</a>. 17 March 2016. WD. URL: <a href="https://www.w3.org/TR/cssom-view-1/">https://www.w3.org/TR/cssom-view-1/</a>
    <dt id="biblio-dom">[DOM]
    <dd>Anne van Kesteren. <a href="https://dom.spec.whatwg.org/">DOM Standard</a>. Living Standard. URL: <a href="https://dom.spec.whatwg.org/">https://dom.spec.whatwg.org/</a>
    <dt id="biblio-element-timing">[ELEMENT-TIMING]
    <dd><a href="https://wicg.github.io/element-timing/">Element Timing API</a>. cg-draft. URL: <a href="https://wicg.github.io/element-timing/">https://wicg.github.io/element-timing/</a>
+   <dt id="biblio-event-timing">[EVENT-TIMING]
+   <dd><a href="https://wicg.github.io/event-timing/">Event Timing API</a>. cg-draft. URL: <a href="https://wicg.github.io/event-timing/">https://wicg.github.io/event-timing/</a>
    <dt id="biblio-fetch">[FETCH]
    <dd>Anne van Kesteren. <a href="https://fetch.spec.whatwg.org/">Fetch Standard</a>. Living Standard. URL: <a href="https://fetch.spec.whatwg.org/">https://fetch.spec.whatwg.org/</a>
    <dt id="biblio-geometry-1">[GEOMETRY-1]
    <dd>Simon Pieters; Chris Harrelson. <a href="https://www.w3.org/TR/geometry-1/">Geometry Interfaces Module Level 1</a>. 4 December 2018. CR. URL: <a href="https://www.w3.org/TR/geometry-1/">https://www.w3.org/TR/geometry-1/</a>
-   <dt id="biblio-hr-time">[HR-TIME]
-   <dd>Jatinder Mann. <a href="https://www.w3.org/TR/hr-time/">High Resolution Time</a>. 17 December 2012. REC. URL: <a href="https://www.w3.org/TR/hr-time/">https://www.w3.org/TR/hr-time/</a>
+   <dt id="biblio-hr-time-2">[HR-TIME-2]
+   <dd>Ilya Grigorik. <a href="https://www.w3.org/TR/hr-time-2/">High Resolution Time Level 2</a>. 21 November 2019. REC. URL: <a href="https://www.w3.org/TR/hr-time-2/">https://www.w3.org/TR/hr-time-2/</a>
+   <dt id="biblio-html">[HTML]
+   <dd>Anne van Kesteren; et al. <a href="https://html.spec.whatwg.org/multipage/">HTML Standard</a>. Living Standard. URL: <a href="https://html.spec.whatwg.org/multipage/">https://html.spec.whatwg.org/multipage/</a>
+   <dt id="biblio-infra">[INFRA]
+   <dd>Anne van Kesteren; Domenic Denicola. <a href="https://infra.spec.whatwg.org/">Infra Standard</a>. Living Standard. URL: <a href="https://infra.spec.whatwg.org/">https://infra.spec.whatwg.org/</a>
    <dt id="biblio-performance-timeline-2">[PERFORMANCE-TIMELINE-2]
-   <dd>Ilya Grigorik. <a href="https://www.w3.org/TR/performance-timeline-2/">Performance Timeline Level 2</a>. 23 April 2019. WD. URL: <a href="https://www.w3.org/TR/performance-timeline-2/">https://www.w3.org/TR/performance-timeline-2/</a>
+   <dd>Ilya Grigorik. <a href="https://www.w3.org/TR/performance-timeline-2/">Performance Timeline Level 2</a>. 24 October 2019. WD. URL: <a href="https://www.w3.org/TR/performance-timeline-2/">https://www.w3.org/TR/performance-timeline-2/</a>
    <dt id="biblio-rfc2119">[RFC2119]
    <dd>S. Bradner. <a href="https://tools.ietf.org/html/rfc2119">Key words for use in RFCs to Indicate Requirement Levels</a>. March 1997. Best Current Practice. URL: <a href="https://tools.ietf.org/html/rfc2119">https://tools.ietf.org/html/rfc2119</a>
    <dt id="biblio-webidl">[WebIDL]
    <dd>Boris Zbarsky. <a href="https://heycam.github.io/webidl/">Web IDL</a>. 15 December 2016. ED. URL: <a href="https://heycam.github.io/webidl/">https://heycam.github.io/webidl/</a>
   </dl>
-  <h3 class="no-num no-ref heading settled" id="informative"><span class="content">Informative References</span><a class="self-link" href="#informative"></a></h3>
-  <dl>
-   <dt id="biblio-html">[HTML]
-   <dd>Anne van Kesteren; et al. <a href="https://html.spec.whatwg.org/multipage/">HTML Standard</a>. Living Standard. URL: <a href="https://html.spec.whatwg.org/multipage/">https://html.spec.whatwg.org/multipage/</a>
-  </dl>
   <h2 class="no-num no-ref heading settled" id="idl-index"><span class="content">IDL Index</span><a class="self-link" href="#idl-index"></a></h2>
-<pre class="idl highlight def"><c- b>interface</c-> <a href="#performancelargestcontentfulpaintcandidate"><code class="highlight"><c- g>PerformanceLargestContentfulPaintCandidate</c-></code></a> : <a class="n" data-link-type="idl-name" href="https://w3c.github.io/performance-timeline/#the-performanceentry-interface" id="ref-for-the-performanceentry-interface①"><c- n>PerformanceEntry</c-></a> {
-    <c- b>readonly</c-> <c- b>attribute</c-> <a class="idl-code" data-link-type="interface" href="https://heycam.github.io/webidl/#idl-unsigned-long" id="ref-for-idl-unsigned-long①"><c- b>unsigned</c-> <c- b>long</c-></a> <a data-readonly data-type="unsigned long" href="#dom-performancelargestcontentfulpaintcandidate-size"><code class="highlight"><c- g>size</c-></code></a>;
-    <c- b>readonly</c-> <c- b>attribute</c-> <a class="n" data-link-type="idl-name" href="https://w3c.github.io/hr-time#dom-domhighrestimestamp" id="ref-for-dom-domhighrestimestamp①"><c- n>DOMHighResTimeStamp</c-></a> <a data-readonly data-type="DOMHighResTimeStamp" href="#dom-performancelargestcontentfulpaintcandidate-responseend"><code class="highlight"><c- g>responseEnd</c-></code></a>;
-    <c- b>readonly</c-> <c- b>attribute</c-> <a class="idl-code" data-link-type="interface" href="https://heycam.github.io/webidl/#idl-DOMString" id="ref-for-idl-DOMString③"><c- b>DOMString</c-></a> <a data-readonly data-type="DOMString" href="#dom-performancelargestcontentfulpaintcandidate-id"><code class="highlight"><c- g>id</c-></code></a>;
-    <c- b>readonly</c-> <c- b>attribute</c-> <a class="idl-code" data-link-type="interface" href="https://heycam.github.io/webidl/#idl-DOMString" id="ref-for-idl-DOMString①①"><c- b>DOMString</c-></a> <a data-readonly data-type="DOMString" href="#dom-performancelargestcontentfulpaintcandidate-url"><code class="highlight"><c- g>url</c-></code></a>;
-    <c- b>readonly</c-> <c- b>attribute</c-> <a class="n" data-link-type="idl-name" href="https://dom.spec.whatwg.org/#element" id="ref-for-element④"><c- n>Element</c-></a>? <a data-readonly data-type="Element?" href="#dom-performancelargestcontentfulpaintcandidate-element"><code class="highlight"><c- g>element</c-></code></a>;
+<pre class="idl highlight def">[<a class="idl-code" data-link-type="extended-attribute" href="https://heycam.github.io/webidl/#Exposed"><c- g>Exposed</c-></a>=<c- n>Window</c->]
+<c- b>interface</c-> <a href="#largestcontentfulpaint"><code class="highlight"><c- g>LargestContentfulPaint</c-></code></a> : <a data-link-type="idl-name" href="https://w3c.github.io/performance-timeline/#the-performanceentry-interface"><c- n>PerformanceEntry</c-></a> {
+    <c- b>readonly</c-> <c- b>attribute</c-> <a data-link-type="idl-name" href="https://w3c.github.io/hr-time#dom-domhighrestimestamp"><c- n>DOMHighResTimeStamp</c-></a> <a data-readonly data-type="DOMHighResTimeStamp" href="#dom-largestcontentfulpaint-rendertime"><code class="highlight"><c- g>renderTime</c-></code></a>;
+    <c- b>readonly</c-> <c- b>attribute</c-> <a data-link-type="idl-name" href="https://w3c.github.io/hr-time#dom-domhighrestimestamp"><c- n>DOMHighResTimeStamp</c-></a> <a data-readonly data-type="DOMHighResTimeStamp" href="#dom-largestcontentfulpaint-loadtime"><code class="highlight"><c- g>loadTime</c-></code></a>;
+    <c- b>readonly</c-> <c- b>attribute</c-> <a class="idl-code" data-link-type="interface" href="https://heycam.github.io/webidl/#idl-unsigned-long"><c- b>unsigned</c-> <c- b>long</c-></a> <a data-readonly data-type="unsigned long" href="#dom-largestcontentfulpaint-size"><code class="highlight"><c- g>size</c-></code></a>;
+    <c- b>readonly</c-> <c- b>attribute</c-> <a class="idl-code" data-link-type="interface" href="https://heycam.github.io/webidl/#idl-DOMString"><c- b>DOMString</c-></a> <a data-readonly data-type="DOMString" href="#dom-largestcontentfulpaint-id"><code class="highlight"><c- g>id</c-></code></a>;
+    <c- b>readonly</c-> <c- b>attribute</c-> <a class="idl-code" data-link-type="interface" href="https://heycam.github.io/webidl/#idl-DOMString"><c- b>DOMString</c-></a> <a data-readonly data-type="DOMString" href="#dom-largestcontentfulpaint-url"><code class="highlight"><c- g>url</c-></code></a>;
+    <c- b>readonly</c-> <c- b>attribute</c-> <a data-link-type="idl-name" href="https://dom.spec.whatwg.org/#element"><c- n>Element</c-></a>? <a data-readonly data-type="Element?" href="#dom-largestcontentfulpaint-element"><code class="highlight"><c- g>element</c-></code></a>;
+    [<a class="idl-code" data-link-type="extended-attribute" href="https://heycam.github.io/webidl/#Default"><c- g>Default</c-></a>] <a class="idl-code" data-link-type="interface" href="https://heycam.github.io/webidl/#idl-object"><c- b>object</c-></a> <a href="#dom-largestcontentfulpaint-tojson"><code class="highlight"><c- g>toJSON</c-></code></a>();
 };
 
 </pre>
-  <aside class="dfn-panel" data-for="performancelargestcontentfulpaintcandidate">
-   <b><a href="#performancelargestcontentfulpaintcandidate">#performancelargestcontentfulpaintcandidate</a></b><b>Referenced in:</b>
+  <aside class="dfn-panel" data-for="largestcontentfulpaint">
+   <b><a href="#largestcontentfulpaint">#largestcontentfulpaint</a></b><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-performancelargestcontentfulpaintcandidate">2.1. PerformanceLargestContentfulPaintCandidate interface</a> <a href="#ref-for-performancelargestcontentfulpaintcandidate①">(2)</a>
-    <li><a href="#ref-for-performancelargestcontentfulpaintcandidate②">3. Processing model</a> <a href="#ref-for-performancelargestcontentfulpaintcandidate③">(2)</a>
+    <li><a href="#ref-for-largestcontentfulpaint">2.1. LargestContentfulPaint interface</a> <a href="#ref-for-largestcontentfulpaint①">(2)</a>
+    <li><a href="#ref-for-largestcontentfulpaint②">3.1. Potentially add LargestContentfulPaint entry</a>
+    <li><a href="#ref-for-largestcontentfulpaint③">3.2. Create a LargestContentfulPaint entry</a> <a href="#ref-for-largestcontentfulpaint④">(2)</a>
    </ul>
   </aside>
-  <aside class="dfn-panel" data-for="dom-performancelargestcontentfulpaintcandidate-size">
-   <b><a href="#dom-performancelargestcontentfulpaintcandidate-size">#dom-performancelargestcontentfulpaintcandidate-size</a></b><b>Referenced in:</b>
+  <aside class="dfn-panel" data-for="dom-largestcontentfulpaint-rendertime">
+   <b><a href="#dom-largestcontentfulpaint-rendertime">#dom-largestcontentfulpaint-rendertime</a></b><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-dom-performancelargestcontentfulpaintcandidate-size">2.1. PerformanceLargestContentfulPaintCandidate interface</a>
-    <li><a href="#ref-for-dom-performancelargestcontentfulpaintcandidate-size①">3. Processing model</a>
+    <li><a href="#ref-for-dom-largestcontentfulpaint-rendertime">2.1. LargestContentfulPaint interface</a>
+    <li><a href="#ref-for-dom-largestcontentfulpaint-rendertime①">3.2. Create a LargestContentfulPaint entry</a>
    </ul>
   </aside>
-  <aside class="dfn-panel" data-for="dom-performancelargestcontentfulpaintcandidate-responseend">
-   <b><a href="#dom-performancelargestcontentfulpaintcandidate-responseend">#dom-performancelargestcontentfulpaintcandidate-responseend</a></b><b>Referenced in:</b>
+  <aside class="dfn-panel" data-for="dom-largestcontentfulpaint-loadtime">
+   <b><a href="#dom-largestcontentfulpaint-loadtime">#dom-largestcontentfulpaint-loadtime</a></b><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-dom-performancelargestcontentfulpaintcandidate-responseend">2.1. PerformanceLargestContentfulPaintCandidate interface</a>
-    <li><a href="#ref-for-dom-performancelargestcontentfulpaintcandidate-responseend①">3. Processing model</a>
+    <li><a href="#ref-for-dom-largestcontentfulpaint-loadtime">2.1. LargestContentfulPaint interface</a>
+    <li><a href="#ref-for-dom-largestcontentfulpaint-loadtime①">3.2. Create a LargestContentfulPaint entry</a>
    </ul>
   </aside>
-  <aside class="dfn-panel" data-for="dom-performancelargestcontentfulpaintcandidate-id">
-   <b><a href="#dom-performancelargestcontentfulpaintcandidate-id">#dom-performancelargestcontentfulpaintcandidate-id</a></b><b>Referenced in:</b>
+  <aside class="dfn-panel" data-for="dom-largestcontentfulpaint-size">
+   <b><a href="#dom-largestcontentfulpaint-size">#dom-largestcontentfulpaint-size</a></b><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-dom-performancelargestcontentfulpaintcandidate-id">2.1. PerformanceLargestContentfulPaintCandidate interface</a>
-    <li><a href="#ref-for-dom-performancelargestcontentfulpaintcandidate-id①">3. Processing model</a>
+    <li><a href="#ref-for-dom-largestcontentfulpaint-size">2.1. LargestContentfulPaint interface</a>
+    <li><a href="#ref-for-dom-largestcontentfulpaint-size①">3.2. Create a LargestContentfulPaint entry</a>
    </ul>
   </aside>
-  <aside class="dfn-panel" data-for="dom-performancelargestcontentfulpaintcandidate-url">
-   <b><a href="#dom-performancelargestcontentfulpaintcandidate-url">#dom-performancelargestcontentfulpaintcandidate-url</a></b><b>Referenced in:</b>
+  <aside class="dfn-panel" data-for="dom-largestcontentfulpaint-id">
+   <b><a href="#dom-largestcontentfulpaint-id">#dom-largestcontentfulpaint-id</a></b><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-dom-performancelargestcontentfulpaintcandidate-url">2.1. PerformanceLargestContentfulPaintCandidate interface</a>
-    <li><a href="#ref-for-dom-performancelargestcontentfulpaintcandidate-url①">3. Processing model</a>
+    <li><a href="#ref-for-dom-largestcontentfulpaint-id">2.1. LargestContentfulPaint interface</a>
+    <li><a href="#ref-for-dom-largestcontentfulpaint-id①">3.2. Create a LargestContentfulPaint entry</a>
    </ul>
   </aside>
-  <aside class="dfn-panel" data-for="dom-performancelargestcontentfulpaintcandidate-element">
-   <b><a href="#dom-performancelargestcontentfulpaintcandidate-element">#dom-performancelargestcontentfulpaintcandidate-element</a></b><b>Referenced in:</b>
+  <aside class="dfn-panel" data-for="dom-largestcontentfulpaint-url">
+   <b><a href="#dom-largestcontentfulpaint-url">#dom-largestcontentfulpaint-url</a></b><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-dom-performancelargestcontentfulpaintcandidate-element">2.1. PerformanceLargestContentfulPaintCandidate interface</a> <a href="#ref-for-dom-performancelargestcontentfulpaintcandidate-element①">(2)</a>
-    <li><a href="#ref-for-dom-performancelargestcontentfulpaintcandidate-element②">3. Processing model</a>
+    <li><a href="#ref-for-dom-largestcontentfulpaint-url">2.1. LargestContentfulPaint interface</a>
+    <li><a href="#ref-for-dom-largestcontentfulpaint-url①">3.2. Create a LargestContentfulPaint entry</a>
    </ul>
   </aside>
-  <aside class="dfn-panel" data-for="starttime">
-   <b><a href="#starttime">#starttime</a></b><b>Referenced in:</b>
+  <aside class="dfn-panel" data-for="dom-largestcontentfulpaint-element">
+   <b><a href="#dom-largestcontentfulpaint-element">#dom-largestcontentfulpaint-element</a></b><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-starttime">2.1. PerformanceLargestContentfulPaintCandidate interface</a>
+    <li><a href="#ref-for-dom-largestcontentfulpaint-element">2.1. LargestContentfulPaint interface</a> <a href="#ref-for-dom-largestcontentfulpaint-element①">(2)</a>
+    <li><a href="#ref-for-dom-largestcontentfulpaint-element②">3.2. Create a LargestContentfulPaint entry</a>
+   </ul>
+  </aside>
+  <aside class="dfn-panel" data-for="rendertime">
+   <b><a href="#rendertime">#rendertime</a></b><b>Referenced in:</b>
+   <ul>
+    <li><a href="#ref-for-rendertime">2.1. LargestContentfulPaint interface</a> <a href="#ref-for-rendertime①">(2)</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="size">
    <b><a href="#size">#size</a></b><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-size">2.1. PerformanceLargestContentfulPaintCandidate interface</a>
+    <li><a href="#ref-for-size">2.1. LargestContentfulPaint interface</a>
    </ul>
   </aside>
-  <aside class="dfn-panel" data-for="responseend">
-   <b><a href="#responseend">#responseend</a></b><b>Referenced in:</b>
+  <aside class="dfn-panel" data-for="loadtime">
+   <b><a href="#loadtime">#loadtime</a></b><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-responseend">2.1. PerformanceLargestContentfulPaintCandidate interface</a>
+    <li><a href="#ref-for-loadtime">2.1. LargestContentfulPaint interface</a> <a href="#ref-for-loadtime①">(2)</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="id">
    <b><a href="#id">#id</a></b><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-id">2.1. PerformanceLargestContentfulPaintCandidate interface</a>
+    <li><a href="#ref-for-id">2.1. LargestContentfulPaint interface</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="url">
    <b><a href="#url">#url</a></b><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-url">2.1. PerformanceLargestContentfulPaintCandidate interface</a>
+    <li><a href="#ref-for-url">2.1. LargestContentfulPaint interface</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="element">
    <b><a href="#element">#element</a></b><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-element②">2.1. PerformanceLargestContentfulPaintCandidate interface</a>
-    <li><a href="#ref-for-element③">3. Processing model</a>
+    <li><a href="#ref-for-element②">2.1. LargestContentfulPaint interface</a>
+    <li><a href="#ref-for-element⑥">3.1. Potentially add LargestContentfulPaint entry</a>
    </ul>
   </aside>
-  <aside class="dfn-panel" data-for="largestcontentfulpaintsize">
-   <b><a href="#largestcontentfulpaintsize">#largestcontentfulpaintsize</a></b><b>Referenced in:</b>
+  <aside class="dfn-panel" data-for="largest-contentful-paint-size">
+   <b><a href="#largest-contentful-paint-size">#largest-contentful-paint-size</a></b><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-largestcontentfulpaintsize">3. Processing model</a> <a href="#ref-for-largestcontentfulpaintsize①">(2)</a>
+    <li><a href="#ref-for-largest-contentful-paint-size">3.1. Potentially add LargestContentfulPaint entry</a>
+    <li><a href="#ref-for-largest-contentful-paint-size①">3.2. Create a LargestContentfulPaint entry</a>
    </ul>
   </aside>
+  <aside class="dfn-panel" data-for="content-set">
+   <b><a href="#content-set">#content-set</a></b><b>Referenced in:</b>
+   <ul>
+    <li><a href="#ref-for-content-set">2.1. LargestContentfulPaint interface</a> <a href="#ref-for-content-set①">(2)</a>
+    <li><a href="#ref-for-content-set②">3.1. Potentially add LargestContentfulPaint entry</a> <a href="#ref-for-content-set③">(2)</a>
+   </ul>
+  </aside>
+  <aside class="dfn-panel" data-for="create-a-largestcontentfulpaint-entry">
+   <b><a href="#create-a-largestcontentfulpaint-entry">#create-a-largestcontentfulpaint-entry</a></b><b>Referenced in:</b>
+   <ul>
+    <li><a href="#ref-for-create-a-largestcontentfulpaint-entry">3.1. Potentially add LargestContentfulPaint entry</a>
+   </ul>
+  </aside>
+  <aside class="dfn-panel" data-for="has-dispatched-scroll-event">
+   <b><a href="#has-dispatched-scroll-event">#has-dispatched-scroll-event</a></b><b>Referenced in:</b>
+   <ul>
+    <li><a href="#ref-for-has-dispatched-scroll-event">3.1. Potentially add LargestContentfulPaint entry</a>
+    <li><a href="#ref-for-has-dispatched-scroll-event①">3.3. Modifications to the DOM specification</a>
+   </ul>
+  </aside>
+<script>/* script-dfn-panel */
+
+document.body.addEventListener("click", function(e) {
+    var queryAll = function(sel) { return [].slice.call(document.querySelectorAll(sel)); }
+    // Find the dfn element or panel, if any, that was clicked on.
+    var el = e.target;
+    var target;
+    var hitALink = false;
+    while(el.parentElement) {
+        if(el.tagName == "A") {
+            // Clicking on a link in a <dfn> shouldn't summon the panel
+            hitALink = true;
+        }
+        if(el.classList.contains("dfn-paneled")) {
+            target = "dfn";
+            break;
+        }
+        if(el.classList.contains("dfn-panel")) {
+            target = "dfn-panel";
+            break;
+        }
+        el = el.parentElement;
+    }
+    if(target != "dfn-panel") {
+        // Turn off any currently "on" or "activated" panels.
+        queryAll(".dfn-panel.on, .dfn-panel.activated").forEach(function(el){
+            el.classList.remove("on");
+            el.classList.remove("activated");
+        });
+    }
+    if(target == "dfn" && !hitALink) {
+        // open the panel
+        var dfnPanel = document.querySelector(".dfn-panel[data-for='" + el.id + "']");
+        if(dfnPanel) {
+            dfnPanel.classList.add("on");
+            var rect = el.getBoundingClientRect();
+            dfnPanel.style.left = window.scrollX + rect.right + 5 + "px";
+            dfnPanel.style.top = window.scrollY + rect.top + "px";
+            var panelRect = dfnPanel.getBoundingClientRect();
+            var panelWidth = panelRect.right - panelRect.left;
+            if(panelRect.right > document.body.scrollWidth && (rect.left - (panelWidth + 5)) > 0) {
+                // Reposition, because the panel is overflowing
+                dfnPanel.style.left = window.scrollX + rect.left - (panelWidth + 5) + "px";
+            }
+        } else {
+            console.log("Couldn't find .dfn-panel[data-for='" + el.id + "']");
+        }
+    } else if(target == "dfn-panel") {
+        // Switch it to "activated" state, which pins it.
+        el.classList.add("activated");
+        el.style.left = null;
+        el.style.top = null;
+    }
+
+});
+</script>
 <script>/* script-var-click-highlighting */
 
     document.addEventListener("click", e=>{
@@ -2249,59 +3091,3 @@ This allows developers to detect support for the API.</p>
         }
     }
     </script>
-<script>/* script-dfn-panel */
-
-document.body.addEventListener("click", function(e) {
-    var queryAll = function(sel) { return [].slice.call(document.querySelectorAll(sel)); }
-    // Find the dfn element or panel, if any, that was clicked on.
-    var el = e.target;
-    var target;
-    var hitALink = false;
-    while(el.parentElement) {
-        if(el.tagName == "A") {
-            // Clicking on a link in a <dfn> shouldn't summon the panel
-            hitALink = true;
-        }
-        if(el.classList.contains("dfn-paneled")) {
-            target = "dfn";
-            break;
-        }
-        if(el.classList.contains("dfn-panel")) {
-            target = "dfn-panel";
-            break;
-        }
-        el = el.parentElement;
-    }
-    if(target != "dfn-panel") {
-        // Turn off any currently "on" or "activated" panels.
-        queryAll(".dfn-panel.on, .dfn-panel.activated").forEach(function(el){
-            el.classList.remove("on");
-            el.classList.remove("activated");
-        });
-    }
-    if(target == "dfn" && !hitALink) {
-        // open the panel
-        var dfnPanel = document.querySelector(".dfn-panel[data-for='" + el.id + "']");
-        if(dfnPanel) {
-            dfnPanel.classList.add("on");
-            var rect = el.getBoundingClientRect();
-            dfnPanel.style.left = window.scrollX + rect.right + 5 + "px";
-            dfnPanel.style.top = window.scrollY + rect.top + "px";
-            var panelRect = dfnPanel.getBoundingClientRect();
-            var panelWidth = panelRect.right - panelRect.left;
-            if(panelRect.right > document.body.scrollWidth && (rect.left - (panelWidth + 5)) > 0) {
-                // Reposition, because the panel is overflowing
-                dfnPanel.style.left = window.scrollX + rect.left - (panelWidth + 5) + "px";
-            }
-        } else {
-            console.log("Couldn't find .dfn-panel[data-for='" + el.id + "']");
-        }
-    } else if(target == "dfn-panel") {
-        // Switch it to "activated" state, which pins it.
-        el.classList.add("activated");
-        el.style.left = null;
-        el.style.top = null;
-    }
-
-});
-</script>
